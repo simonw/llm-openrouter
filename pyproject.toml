@@ -1,0 +1,26 @@
+[project]
+name = "llm-openrouter"
+version = "0.1"
+description = " Use openrouter.ai models with LLM"
+readme = "README.md"
+authors = [{name = "Simon Willison"}]
+license = {text = "Apache-2.0"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+    "llm>=0.7",
+    # TODO: Make this >=0.8 after that release
+]
+
+[project.urls]
+Homepage = "https://github.com/simonw/llm-openrouter"
+Changelog = "https://github.com/simonw/llm-openrouter/releases"
+Issues = "https://github.com/simonw/llm-openrouter/issues"
+CI = "https://github.com/simonw/llm-openrouter/actions"
+
+[project.entry-points.llm]
+openrouter = "llm_openrouter"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-httpx"]
