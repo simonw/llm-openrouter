@@ -1,7 +1,7 @@
 [project]
 name = "llm-openrouter"
 version = "0.1"
-description = " Use openrouter.ai models with LLM"
+description = "LLM plugin for models hosted by OpenRouter"
 readme = "README.md"
 authors = [{name = "Simon Willison"}]
 license = {text = "Apache-2.0"}
