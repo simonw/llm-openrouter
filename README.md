@@ -1,15 +1,12 @@
 # llm-openrouter
 
-<!-- [![PyPI](https://img.shields.io/pypi/v/llm-openrouter.svg)](https://pypi.org/project/llm-openrouter/)
+[![PyPI](https://img.shields.io/pypi/v/llm-openrouter.svg)](https://pypi.org/project/llm-openrouter/)
 [![Changelog](https://img.shields.io/github/v/release/simonw/llm-openrouter?include_prereleases&label=changelog)](https://github.com/simonw/llm-openrouter/releases)
-[![Tests](https://github.com/simonw/llm-openrouter/workflows/Test/badge.svg)](https://github.com/simonw/llm-openrouter/actions?query=workflow%3ATest) -->
+[![Tests](https://github.com/simonw/llm-openrouter/workflows/Test/badge.svg)](https://github.com/simonw/llm-openrouter/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/llm-openrouter/blob/main/LICENSE)
 
 [LLM](https://llm.datasette.io/) plugin for models hosted by [OpenRouter](https://openrouter.ai/)
 
-> ⚠️ This plugin requires LLM `main` branch at the moment, it will not work with a release until LLM 0.8.
-
-<!--
 ## Installation
 
 First, [install the LLM command-line utility](https://llm.datasette.io/en/stable/setup.html).
@@ -18,7 +15,7 @@ Now install this plugin in the same environment as LLM.
 ```bash
 llm install llm-openrouter
 ```
--->
+
 ## Configuration
 
 You will need an API key from OpenRouter. You can [obtain one here](https://openrouter.ai/keys).
