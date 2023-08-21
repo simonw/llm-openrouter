@@ -9,8 +9,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License"
 ]
 dependencies = [
-    "llm>=0.7",
-    # TODO: Make this >=0.8 after that release
+    "llm>=0.8",
 ]
 
 [project.urls]
