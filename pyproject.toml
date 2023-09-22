@@ -10,6 +10,7 @@ classifiers = [
 ]
 dependencies = [
     "llm>=0.8",
+    "httpx"
 ]
 
 [project.urls]
