@@ -4,7 +4,6 @@ from pathlib import Path
 import json
 import time
 import httpx
-import urllib3
 
 
 def get_openrouter_models():
@@ -68,7 +67,7 @@ def fetch_cached_json(url, path, cache_timeout):
             json.dump(response.json(), file)
 
         return response.json()
-    except (httpx.HTTPError, urllib3.exceptions.NameResolutionError):
+    except httpx.HTTPError:
         # If there's an existing file, load it
         if path.is_file():
             with open(path, "r") as file:
