@@ -16,6 +16,7 @@ def get_openrouter_models():
 
 class OpenRouterChat(Chat):
     needs_key = "openrouter"
+    key_env_var = "OPENROUTER_KEY"
 
     def __str__(self):
         return "OpenRouter: {}".format(self.model_id)
