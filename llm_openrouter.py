@@ -29,10 +29,12 @@ def register_models(register):
     if not key:
         return
     for model_definition in get_openrouter_models():
+        supports_images = get_supports_images(model_definition)
         register(
             OpenRouterChat(
                 model_id="openrouter/{}".format(model_definition["id"]),
                 model_name=model_definition["id"],
+                vision=supports_images,
                 api_base="https://openrouter.ai/api/v1",
                 headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
             )
@@ -78,3 +80,14 @@ def fetch_cached_json(url, path, cache_timeout):
             raise DownloadError(
                 f"Failed to download data and no cache is available at {path}"
             )
+
+
+def get_supports_images(model_definition):
+    try:
+        # e.g. `text->text` or `text+image->text`
+        modality = model_definition["architecture"]["modality"]
+
+        input_modalities = modality.split("->")[0].split("+")
+        return "image" in input_modalities
+    except Exception:
+        return False

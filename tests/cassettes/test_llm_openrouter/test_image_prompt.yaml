@@ -1,0 +1,111 @@
+interactions:
+- request:
+    body: '{"messages": [{"role": "user", "content": [{"type": "text", "text": "Describe
+      image in three words"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKYAAAEaAgMAAADmmcReAAAACVBMVEX///8A/wD+AQASdAFKAAAAR0lEQVR42u3YMREAMAjAwC5d6q8mUYkEVuA+8yvIkVr0oghFURRFURRFURRFUdRCkSRJM7u/CEVRFEVRFEVRFEXRpdQXkcaVBRUPn8UJn6QAAAAASUVORK5CYII="}}]}],
+      "model": "anthropic/claude-3.5-sonnet", "stream": true, "stream_options": {"include_usage":
+      true}}'
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      authorization:
+      - Bearer sk-...
+      connection:
+      - keep-alive
+      content-length:
+      - '474'
+      content-type:
+      - application/json
+      host:
+      - openrouter.ai
+      http-referer:
+      - https://llm.datasette.io/
+      user-agent:
+      - OpenAI/Python 1.54.3
+      x-stainless-arch:
+      - arm64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - MacOS
+      x-stainless-package-version:
+      - 1.54.3
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.13.0
+      x-title:
+      - LLM
+    method: POST
+    uri: https://openrouter.ai/api/v1/chat/completions
+  response:
+    body:
+      string: 'data: {"id":"gen-1731198435-uhwsXeVC1E0PNTrHoyaW","provider":"Anthropic","model":"anthropic/claude-3.5-sonnet","object":"chat.completion.chunk","created":1731198435,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null,"logprobs":null}]}
+
+
+        data: {"id":"gen-1731198435-uhwsXeVC1E0PNTrHoyaW","provider":"Anthropic","model":"anthropic/claude-3.5-sonnet","object":"chat.completion.chunk","created":1731198435,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null,"logprobs":null}]}
+
+
+        : OPENROUTER PROCESSING
+
+
+        data: {"id":"gen-1731198435-uhwsXeVC1E0PNTrHoyaW","provider":"Anthropic","model":"anthropic/claude-3.5-sonnet","object":"chat.completion.chunk","created":1731198435,"choices":[{"index":0,"delta":{"role":"assistant","content":"Re"},"finish_reason":null,"logprobs":null}]}
+
+
+        data: {"id":"gen-1731198435-uhwsXeVC1E0PNTrHoyaW","provider":"Anthropic","model":"anthropic/claude-3.5-sonnet","object":"chat.completion.chunk","created":1731198435,"choices":[{"index":0,"delta":{"role":"assistant","content":"d
+        Green Squares"},"finish_reason":null,"logprobs":null}]}
+
+
+        : OPENROUTER PROCESSING
+
+
+        data: {"id":"gen-1731198435-uhwsXeVC1E0PNTrHoyaW","provider":"Anthropic","model":"anthropic/claude-3.5-sonnet","object":"chat.completion.chunk","created":1731198435,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"end_turn"}]}
+
+
+        : OPENROUTER PROCESSING
+
+
+        data: {"id":"gen-1731198435-uhwsXeVC1E0PNTrHoyaW","provider":"Anthropic","model":"anthropic/claude-3.5-sonnet","object":"chat.completion.chunk","created":1731198435,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null,"logprobs":null}],"usage":{"prompt_tokens":82,"completion_tokens":11,"total_tokens":93}}
+
+
+        data: [DONE]
+
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-RAY:
+      - 8e01ea6c9e920f85-EWR
+      Cache-Control:
+      - no-cache
+      Cf-Placement:
+      - remote-DFW
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Sun, 10 Nov 2024 00:27:15 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      x-clerk-auth-message:
+      - Invalid JWT form. A JWT consists of three parts separated by dots. (reason=token-invalid,
+        token-carrier=header)
+      x-clerk-auth-reason:
+      - token-invalid
+      x-clerk-auth-status:
+      - signed-out
+    status:
+      code: 200
+      message: OK
+version: 1

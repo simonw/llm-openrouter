@@ -23,4 +23,4 @@ CI = "https://github.com/simonw/llm-openrouter/actions"
 openrouter = "llm_openrouter"
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-httpx"]
+test = ["pytest", "pytest-recording", "inline-snapshot"]
