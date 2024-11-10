@@ -18,20 +18,19 @@ TINY_PNG = (
 @pytest.mark.vcr
 def test_prompt():
     model = llm.get_model("openrouter/openai/gpt-4o")
-    model.key = model.key or "sk-..."  # don't override existing key
     response = model.prompt("Two names for a pet pelican, be brief")
-    assert str(response) == snapshot("Gully or Flap.")
+    assert str(response) == snapshot("Gully or Skipper")
     response_dict = dict(response.response_json)
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Gully or Flap.",
+            "content": "Gully or Skipper",
             "role": "assistant",
             "finish_reason": "stop",
-            "usage": {"completion_tokens": 6, "prompt_tokens": 17, "total_tokens": 23},
+            "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
             "object": "chat.completion.chunk",
             "model": "openai/gpt-4o",
-            "created": 1731198434,
+            "created": 1731200404,
         }
     )
 
@@ -52,22 +51,21 @@ def test_llm_models():
 @pytest.mark.vcr
 def test_image_prompt():
     model = llm.get_model("openrouter/anthropic/claude-3.5-sonnet")
-    model.key = model.key or "sk-..."
     response = model.prompt(
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
     )
-    assert str(response) == snapshot("Red Green Squares")
+    assert str(response) == snapshot("Red and green")
     response_dict = response.response_json
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Red Green Squares",
+            "content": "Red and green",
             "role": "assistant",
             "finish_reason": "end_turn",
-            "usage": {"completion_tokens": 11, "prompt_tokens": 82, "total_tokens": 93},
+            "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
             "object": "chat.completion.chunk",
             "model": "anthropic/claude-3.5-sonnet",
-            "created": 1731198435,
+            "created": 1731200406,
         }
     )
