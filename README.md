@@ -77,3 +77,7 @@ To run the tests:
 ```bash
 pytest
 ```
+To add new recordings and snapshots, run:
+```bash
+pytest --record-mode=once --inline-snapshot=create
+```
