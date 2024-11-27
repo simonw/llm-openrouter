@@ -29,12 +29,16 @@ def register_models(register):
     if not key:
         return
     for model_definition in get_openrouter_models():
+        vision = False
+        if "image" in model_definition["architecture"]["modality"].split("->")[0]:
+            vision = True
         register(
             OpenRouterChat(
                 model_id="openrouter/{}".format(model_definition["id"]),
                 model_name=model_definition["id"],
                 api_base="https://openrouter.ai/api/v1",
                 headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
+                vision=vision
             )
         )
 
