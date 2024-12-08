@@ -10,7 +10,8 @@ classifiers = [
 ]
 dependencies = [
     "llm>=0.17",
-    "httpx"
+    "httpx",
+    "openai>=1.57.0",
 ]
 
 [project.urls]
