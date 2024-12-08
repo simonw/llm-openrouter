@@ -20,7 +20,7 @@ llm install llm-openrouter
 
 You will need an API key from OpenRouter. You can [obtain one here](https://openrouter.ai/keys).
 
-You can set that as an environment variable called `OPENROUTER_KEY`, or add it to the `llm` set of saved keys using:
+You can set that as an environment variable called `LLM_OPENROUTER_KEY`, or add it to the `llm` set of saved keys using:
 
 ```bash
 llm keys set openrouter
