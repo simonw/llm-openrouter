@@ -1,5 +1,5 @@
 import llm
-from llm.default_plugins.openai_models import Chat
+from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
 import json
 import time
@@ -22,6 +22,14 @@ class OpenRouterChat(Chat):
         return "OpenRouter: {}".format(self.model_id)
 
 
+class OpenRouterAsyncChat(AsyncChat):
+    needs_key = "openrouter"
+    key_env_var = "OPENROUTER_KEY"
+
+    def __str__(self):
+        return "OpenRouter: {}".format(self.model_id)
+
+
 @llm.hookimpl
 def register_models(register):
     # Only do this if the openrouter key is set
@@ -30,14 +38,16 @@ def register_models(register):
         return
     for model_definition in get_openrouter_models():
         supports_images = get_supports_images(model_definition)
+        kwargs = dict(
+            model_id="openrouter/{}".format(model_definition["id"]),
+            model_name=model_definition["id"],
+            vision=supports_images,
+            api_base="https://openrouter.ai/api/v1",
+            headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
+        )
         register(
-            OpenRouterChat(
-                model_id="openrouter/{}".format(model_definition["id"]),
-                model_name=model_definition["id"],
-                vision=supports_images,
-                api_base="https://openrouter.ai/api/v1",
-                headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
-            )
+            OpenRouterChat(**kwargs),
+            OpenRouterAsyncChat(**kwargs),
         )
 
 
