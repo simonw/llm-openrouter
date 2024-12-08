@@ -54,6 +54,13 @@ Now you can prompt Claude using:
 ```bash
 cat llm_openrouter.py | llm -m claude -s 'write some pytest tests for this'
 ```
+
+Images are supported too, for some models:
+```bash
+llm -m openrouter/anthropic/claude-3.5-sonnet 'describe this image' -a https://static.simonwillison.net/static/2024/pelicans.jpg
+llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
+```
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
@@ -64,9 +71,13 @@ source venv/bin/activate
 ```
 Now install the dependencies and test dependencies:
 ```bash
-pip install -e '.[test]'
+llm install -e '.[test]'
 ```
 To run the tests:
 ```bash
 pytest
+```
+To add new recordings and snapshots, run:
+```bash
+pytest --record-mode=once --inline-snapshot=create
 ```
