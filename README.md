@@ -63,9 +63,9 @@ llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 
 ### Include Reasoning Option
 
-The `include_reasoning` option can be used to include reasoning in the response. To use this option, set `include_reasoning=True` in the prompt method. For example:
+The `include_reasoning` option can be used to include reasoning in the response. To use this option, set `include_reasoning true` in the prompt method. For example:
 ```bash
-llm -m openrouter/anthropic/claude-2 "Two names for a pet pelican, be brief" -o include-reasoning true
+llm -m openrouter/deepseek/r1 "Two names for a pet pelican, be brief" -o include-reasoning true
 ```
 
 ## Development
