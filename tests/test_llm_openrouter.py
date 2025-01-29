@@ -34,6 +34,23 @@ def test_prompt():
         }
     )
 
+    # Test with include_reasoning option
+    response_with_reasoning = model.prompt("Two names for a pet pelican, be brief", include_reasoning=True)
+    assert str(response_with_reasoning) == snapshot("Gully or Skipper")
+    response_with_reasoning_dict = dict(response_with_reasoning.response_json)
+    response_with_reasoning_dict.pop("id")  # differs between requests
+    assert response_with_reasoning_dict == snapshot(
+        {
+            "content": "Gully or Skipper",
+            "role": "assistant",
+            "finish_reason": "stop",
+            "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
+            "object": "chat.completion.chunk",
+            "model": "openai/gpt-4o",
+            "created": 1731200404,
+        }
+    )
+
 
 @pytest.mark.vcr
 def test_llm_models():
@@ -59,6 +76,27 @@ def test_image_prompt():
     response_dict = response.response_json
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
+        {
+            "content": "Red and green",
+            "role": "assistant",
+            "finish_reason": "end_turn",
+            "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
+            "object": "chat.completion.chunk",
+            "model": "anthropic/claude-3.5-sonnet",
+            "created": 1731200406,
+        }
+    )
+
+    # Test with include_reasoning option
+    response_with_reasoning = model.prompt(
+        "Describe image in three words",
+        attachments=[llm.Attachment(content=TINY_PNG)],
+        include_reasoning=True,
+    )
+    assert str(response_with_reasoning) == snapshot("Red and green")
+    response_with_reasoning_dict = response_with_reasoning.response_json
+    response_with_reasoning_dict.pop("id")  # differs between requests
+    assert response_with_reasoning_dict == snapshot(
         {
             "content": "Red and green",
             "role": "assistant",

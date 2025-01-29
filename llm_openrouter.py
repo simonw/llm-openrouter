@@ -14,12 +14,22 @@ def get_openrouter_models():
     )["data"]
 
 
+class OpenRouterOptions:
+    def __init__(self, include_reasoning=None):
+        self.include_reasoning = include_reasoning
+
+
 class OpenRouterChat(Chat):
     needs_key = "openrouter"
     key_env_var = "OPENROUTER_KEY"
 
     def __str__(self):
         return "OpenRouter: {}".format(self.model_id)
+
+    def prompt(self, prompt, options=None, **kwargs):
+        if options and options.include_reasoning:
+            kwargs["include_reasoning"] = True
+        return super().prompt(prompt, **kwargs)
 
 
 class OpenRouterAsyncChat(AsyncChat):
@@ -28,6 +38,11 @@ class OpenRouterAsyncChat(AsyncChat):
 
     def __str__(self):
         return "OpenRouter: {}".format(self.model_id)
+
+    async def prompt(self, prompt, options=None, **kwargs):
+        if options and options.include_reasoning:
+            kwargs["include_reasoning"] = True
+        return await super().prompt(prompt, **kwargs)
 
 
 @llm.hookimpl
