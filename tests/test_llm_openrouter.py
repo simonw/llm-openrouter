@@ -16,40 +16,38 @@ TINY_PNG = (
 
 
 @pytest.mark.vcr
-def test_prompt():
+@pytest.mark.parametrize("include_reasoning", [True, False, None])
+def test_prompt(include_reasoning):
     model = llm.get_model("openrouter/openai/gpt-4o")
-    response = model.prompt("Two names for a pet pelican, be brief")
+    response = model.prompt("Two names for a pet pelican, be brief", include_reasoning=include_reasoning)
     assert str(response) == snapshot("Gully or Skipper")
     response_dict = dict(response.response_json)
     response_dict.pop("id")  # differs between requests
-    assert response_dict == snapshot(
-        {
-            "content": "Gully or Skipper",
-            "role": "assistant",
-            "finish_reason": "stop",
-            "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
-            "object": "chat.completion.chunk",
-            "model": "openai/gpt-4o",
-            "created": 1731200404,
-        }
-    )
-
-    # Test with include_reasoning option
-    response_with_reasoning = model.prompt("Two names for a pet pelican, be brief", include_reasoning=True)
-    assert str(response_with_reasoning) == snapshot("Gully or Skipper")
-    response_with_reasoning_dict = dict(response_with_reasoning.response_json)
-    response_with_reasoning_dict.pop("id")  # differs between requests
-    assert response_with_reasoning_dict == snapshot(
-        {
-            "content": "Gully or Skipper",
-            "role": "assistant",
-            "finish_reason": "stop",
-            "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
-            "object": "chat.completion.chunk",
-            "model": "openai/gpt-4o",
-            "created": 1731200404,
-        }
-    )
+    if include_reasoning:
+        assert response_dict == snapshot(
+            {
+                "content": "Gully or Skipper",
+                "role": "assistant",
+                "finish_reason": "stop",
+                "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
+                "object": "chat.completion.chunk",
+                "model": "openai/gpt-4o",
+                "created": 1731200404,
+                "reasoning": "The names Gully and Skipper are short and related to the sea, making them suitable for a pet pelican."
+            }
+        )
+    else:
+        assert response_dict == snapshot(
+            {
+                "content": "Gully or Skipper",
+                "role": "assistant",
+                "finish_reason": "stop",
+                "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
+                "object": "chat.completion.chunk",
+                "model": "openai/gpt-4o",
+                "created": 1731200404,
+            }
+        )
 
 
 @pytest.mark.vcr
@@ -66,44 +64,39 @@ def test_llm_models():
 
 
 @pytest.mark.vcr
-def test_image_prompt():
+@pytest.mark.parametrize("include_reasoning", [True, False, None])
+def test_image_prompt(include_reasoning):
     model = llm.get_model("openrouter/anthropic/claude-3.5-sonnet")
     response = model.prompt(
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
+        include_reasoning=include_reasoning,
     )
     assert str(response) == snapshot("Red and green")
     response_dict = response.response_json
     response_dict.pop("id")  # differs between requests
-    assert response_dict == snapshot(
-        {
-            "content": "Red and green",
-            "role": "assistant",
-            "finish_reason": "end_turn",
-            "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
-            "object": "chat.completion.chunk",
-            "model": "anthropic/claude-3.5-sonnet",
-            "created": 1731200406,
-        }
-    )
-
-    # Test with include_reasoning option
-    response_with_reasoning = model.prompt(
-        "Describe image in three words",
-        attachments=[llm.Attachment(content=TINY_PNG)],
-        include_reasoning=True,
-    )
-    assert str(response_with_reasoning) == snapshot("Red and green")
-    response_with_reasoning_dict = response_with_reasoning.response_json
-    response_with_reasoning_dict.pop("id")  # differs between requests
-    assert response_with_reasoning_dict == snapshot(
-        {
-            "content": "Red and green",
-            "role": "assistant",
-            "finish_reason": "end_turn",
-            "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
-            "object": "chat.completion.chunk",
-            "model": "anthropic/claude-3.5-sonnet",
-            "created": 1731200406,
-        }
-    )
+    if include_reasoning:
+        assert response_dict == snapshot(
+            {
+                "content": "Red and green",
+                "role": "assistant",
+                "finish_reason": "end_turn",
+                "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
+                "object": "chat.completion.chunk",
+                "model": "anthropic/claude-3.5-sonnet",
+                "created": 1731200406,
+                "reasoning": "The image predominantly features red and green colors, which are the most noticeable elements."
+            }
+        )
+    else:
+        assert response_dict == snapshot(
+            {
+                "content": "Red and green",
+                "role": "assistant",
+                "finish_reason": "end_turn",
+                "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
+                "object": "chat.completion.chunk",
+                "model": "anthropic/claude-3.5-sonnet",
+                "created": 1731200406,
+            }
+        )
