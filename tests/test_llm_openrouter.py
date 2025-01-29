@@ -18,7 +18,7 @@ TINY_PNG = (
 @pytest.mark.vcr
 @pytest.mark.parametrize("include_reasoning", [True, False, None])
 def test_prompt(include_reasoning):
-    model = llm.get_model("openrouter/openai/gpt-4o")
+    model = llm.get_model("openrouter/deepseek/r1")
     response = model.prompt("Two names for a pet pelican, be brief", include_reasoning=include_reasoning)
     assert str(response) == snapshot("Gully or Skipper")
     response_dict = dict(response.response_json)
@@ -66,7 +66,7 @@ def test_llm_models():
 @pytest.mark.vcr
 @pytest.mark.parametrize("include_reasoning", [True, False, None])
 def test_image_prompt(include_reasoning):
-    model = llm.get_model("openrouter/anthropic/claude-3.5-sonnet")
+    model = llm.get_model("openrouter/deepseek/r1")
     response = model.prompt(
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
