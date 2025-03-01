@@ -36,19 +36,36 @@ def register_models(register):
     key = llm.get_key("", "openrouter", "LLM_OPENROUTER_KEY")
     if not key:
         return
+
+    api_base = "https://openrouter.ai/api/v1"
+    headers = {"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"}
+
+    versions = ["", ":online"]
+
     for model_definition in get_openrouter_models():
-        supports_images = get_supports_images(model_definition)
-        kwargs = dict(
-            model_id="openrouter/{}".format(model_definition["id"]),
-            model_name=model_definition["id"],
-            vision=supports_images,
-            api_base="https://openrouter.ai/api/v1",
-            headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
-        )
-        register(
-            OpenRouterChat(**kwargs),
-            OpenRouterAsyncChat(**kwargs),
-        )
+        vision = get_supports_images(model_definition)
+        base_model_id = "openrouter/{}".format(model_definition["id"])
+        base_model_name = model_definition["id"]
+
+        for version in versions:
+            model_id = base_model_id + version
+            model_name = base_model_name + version
+            register(
+                OpenRouterChat(
+                    model_id=model_id,
+                    model_name=model_name,
+                    vision=vision,
+                    api_base=api_base,
+                    headers=headers,
+                ),
+                OpenRouterAsyncChat(
+                    model_id=model_id,
+                    model_name=model_name,
+                    vision=vision,
+                    api_base=api_base,
+                    headers=headers,
+                ),
+            )
 
 
 class DownloadError(Exception):

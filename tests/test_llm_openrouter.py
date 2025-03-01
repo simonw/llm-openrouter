@@ -42,7 +42,9 @@ def test_llm_models():
     assert result.exit_code == 0, result.output
     fragments = (
         "OpenRouter: openrouter/openai/gpt-3.5-turbo",
+        "OpenRouter: openrouter/openai/gpt-3.5-turbo:online",
         "OpenRouter: openrouter/anthropic/claude-2",
+        "OpenRouter: openrouter/anthropic/claude-2:online",
     )
     for fragment in fragments:
         assert fragment in result.output
