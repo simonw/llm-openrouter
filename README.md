@@ -87,7 +87,7 @@ LLM includes support for [schemas](https://llm.datasette.io/en/stable/schemas.ht
 
 Some of the models provided by OpenRouter are compatible with this feature, see [their full list of structured output models](https://openrouter.ai/models?order=newest&supported_parameters=structured_outputs) for details.
 
-`llm-openrouter` currently enables schema support for all models, but this includes models that do not support the feature. If you try to run a schema against an unsupported model your schema will be ignored, so test carefully.
+`llm-openrouter` currently enables schema support for the models in that list. Models have varying levels of quality in their schema support, so test carefully rather than assuming all models will correctly work the same.
 
 ```bash
 llm -m openrouter/google/gemini-flash-1.5 'invent 3 cool capybaras' \

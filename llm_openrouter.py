@@ -10,11 +10,23 @@ import httpx
 
 
 def get_openrouter_models():
-    return fetch_cached_json(
+    models = fetch_cached_json(
         url="https://openrouter.ai/api/v1/models",
         path=llm.user_dir() / "openrouter_models.json",
         cache_timeout=3600,
     )["data"]
+    schema_supporting_ids = {
+        model["id"]
+        for model in fetch_cached_json(
+            url="http://openrouter.ai/api/v1/models?supported_parameters=structured_outputs",
+            path=llm.user_dir() / "openrouter_models_structured_outputs.json",
+            cache_timeout=3600,
+        )["data"]
+    }
+    # Annotate models with their schema support
+    for model in models:
+        model["supports_schema"] = model["id"] in schema_supporting_ids
+    return models
 
 
 class _mixin:
@@ -82,7 +94,7 @@ def register_models(register):
             model_id="openrouter/{}".format(model_definition["id"]),
             model_name=model_definition["id"],
             vision=supports_images,
-            supports_schema=True,
+            supports_schema=model_definition["supports_schema"],
             api_base="https://openrouter.ai/api/v1",
             headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
         )
@@ -178,6 +190,7 @@ def register_commands(cli):
                         f"  architecture: "
                         + (" ".join(value for value in architecture.values() if value))
                     )
+                bits.append(f"  supports_schema: {model['supports_schema']}")
                 pricing = format_pricing(model["pricing"])
                 if pricing:
                     bits.append("  pricing: " + pricing)
