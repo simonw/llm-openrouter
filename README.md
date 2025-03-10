@@ -61,7 +61,18 @@ llm -m openrouter/anthropic/claude-3.5-sonnet 'describe this image' -a https://s
 llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 ```
 
-## Information about your key
+### Incorporating search results from Exa
+
+OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.
+
+Enable this feature using the `-o plugins_web 1` option:
+
+```bash
+llm -m openrouter/mistralai/mistral-small -o plugins_web 1 'key events on march 1st 2025'
+```
+Consult the OpenRouter documentation for [current pricing](https://openrouter.ai/docs/features/web-search#pricing).
+
+### Information about your key
 
 The `llm openrouter key-info` command shows you information about your current API key, including rate limits:
 

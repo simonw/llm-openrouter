@@ -2,6 +2,8 @@ import click
 import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
+from pydantic import Field
+from typing import Optional
 import json
 import time
 import httpx
@@ -15,7 +17,22 @@ def get_openrouter_models():
     )["data"]
 
 
-class OpenRouterChat(Chat):
+class _mixin:
+    class Options(Chat.Options):
+        plugins_web: Optional[bool] = Field(
+            description="Use relevant search results from Exa",
+            default=None,
+        )
+
+    def build_kwargs(self, prompt, stream):
+        kwargs = super().build_kwargs(prompt, stream)
+        if prompt.options.plugins_web:
+            kwargs.pop("plugins_web", None)
+            kwargs["extra_body"] = {"plugins": [{"id": "web"}]}
+        return kwargs
+
+
+class OpenRouterChat(_mixin, Chat):
     needs_key = "openrouter"
     key_env_var = "OPENROUTER_KEY"
 
@@ -23,7 +40,7 @@ class OpenRouterChat(Chat):
         return "OpenRouter: {}".format(self.model_id)
 
 
-class OpenRouterAsyncChat(AsyncChat):
+class OpenRouterAsyncChat(_mixin, AsyncChat):
     needs_key = "openrouter"
     key_env_var = "OPENROUTER_KEY"
 
