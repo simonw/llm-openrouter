@@ -1,3 +1,4 @@
+import click
 import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
@@ -101,3 +102,21 @@ def get_supports_images(model_definition):
         return "image" in input_modalities
     except Exception:
         return False
+
+
+@llm.hookimpl
+def register_commands(cli):
+    @cli.group()
+    def openrouter():
+        "Commands relating to the llm-openrouter plugin"
+
+    @openrouter.command()
+    def key_info():
+        "View information and rate limits for the current key"
+        key = llm.get_key("", "openrouter", "LLM_OPENROUTER_KEY")
+        response = httpx.get(
+            "https://openrouter.ai/api/v1/auth/key",
+            headers={"Authorization": f"Bearer {key}"},
+        )
+        response.raise_for_status()
+        click.echo(json.dumps(response.json()["data"], indent=2))

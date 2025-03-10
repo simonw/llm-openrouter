@@ -61,6 +61,28 @@ llm -m openrouter/anthropic/claude-3.5-sonnet 'describe this image' -a https://s
 llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 ```
 
+## Information about your key
+
+The `llm openrouter key-info` command shows you information about your current API key, including rate limits:
+
+```bash
+llm openrouter key-info
+```
+Example output:
+```json
+{
+  "label": "sk-or-v1-0fa...240",
+  "limit": null,
+  "usage": 0.65017511,
+  "limit_remaining": null,
+  "is_free_tier": false,
+  "rate_limit": {
+    "requests": 40,
+    "interval": "10s"
+  }
+}
+```
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
