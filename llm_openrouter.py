@@ -60,6 +60,7 @@ def register_models(register):
             model_id="openrouter/{}".format(model_definition["id"]),
             model_name=model_definition["id"],
             vision=supports_images,
+            supports_schema=True,
             api_base="https://openrouter.ai/api/v1",
             headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
         )

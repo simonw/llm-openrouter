@@ -61,6 +61,69 @@ llm -m openrouter/anthropic/claude-3.5-sonnet 'describe this image' -a https://s
 llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 ```
 
+### Vision models
+
+Some OpenRouter models can accept image attachments. Run this command:
+
+```bash
+llm models --options -q openrouter
+```
+And look for models that list these attachment types:
+
+```
+  Attachment types:
+    image/gif, image/jpeg, image/png, image/webp
+```
+You can feed these models images as URLs or file paths, for example:
+
+```bash
+llm -m openrouter/google/gemini-flash-1.5 'describe image' \
+  -a https://static.simonwillison.net/static/2025/two-pelicans.jpg
+```
+
+### Schemas
+
+LLM includes support for [schemas](https://llm.datasette.io/en/stable/schemas.html), allowing you to control the JSON structure of the output returned by the model.
+
+Some of the models provided by OpenRouter are compatible with this feature, see [their full list of structured output models](https://openrouter.ai/models?order=newest&supported_parameters=structured_outputs) for details.
+
+`llm-openrouter` currently enables schema support for all models, but this includes models that do not support the feature. If you try to run a schema against an unsupported model your schema will be ignored, so test carefully.
+
+```bash
+llm -m openrouter/google/gemini-flash-1.5 'invent 3 cool capybaras' \
+  --schema-multi 'name,bio'
+```
+Output:
+```json
+{
+  "items": [
+    {
+      "bio": "Chill vibes only.  Spends most days floating on lily pads, occasionally accepting head scratches from passing frogs.",
+      "name": "Professor Fluffernutter"
+    },
+    {
+      "bio": "A thrill-seeker!  Capybara extraordinaire known for her daring escapes from the local zoo and impromptu skateboarding sessions.",
+      "name": "Capybara-bara the Bold"
+    },
+    {
+      "bio": "A renowned artist, creating masterpieces using mud, leaves, and her own surprisingly dexterous paws.",
+      "name": "Michelangelo Capybara"
+    }
+  ]
+}
+```
+
+### Incorporating search results from Exa
+
+OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.
+
+Enable this feature using the `-o plugins_web 1` option:
+
+```bash
+llm -m openrouter/mistralai/mistral-small -o plugins_web 1 'key events on march 1st 2025'
+```
+Consult the OpenRouter documentation for [current pricing](https://openrouter.ai/docs/features/web-search#pricing).
+
 ### Listing models
 
 The `llm models -q openrouter` command will display all available models, or you can use this command to see more detailed JSON:
@@ -105,18 +168,7 @@ Add `--free` for a list of just the models that are [available for free](https:/
 llm openrouter models --free
 ```
 
-### Incorporating search results from Exa
-
-OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.
-
-Enable this feature using the `-o plugins_web 1` option:
-
-```bash
-llm -m openrouter/mistralai/mistral-small -o plugins_web 1 'key events on march 1st 2025'
-```
-Consult the OpenRouter documentation for [current pricing](https://openrouter.ai/docs/features/web-search#pricing).
-
-### Information about your key
+### Information about your API key
 
 The `llm openrouter key-info` command shows you information about your current API key, including rate limits:
 
