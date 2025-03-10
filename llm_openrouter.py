@@ -19,15 +19,15 @@ def get_openrouter_models():
 
 class _mixin:
     class Options(Chat.Options):
-        plugins_web: Optional[bool] = Field(
+        online: Optional[bool] = Field(
             description="Use relevant search results from Exa",
             default=None,
         )
 
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
-        if prompt.options.plugins_web:
-            kwargs.pop("plugins_web", None)
+        if prompt.options.online:
+            kwargs.pop("online", None)
             kwargs["extra_body"] = {"plugins": [{"id": "web"}]}
         return kwargs
 
