@@ -113,6 +113,18 @@ Output:
 }
 ```
 
+### Provider routing
+
+OpenRouter offers [comprehensive options](https://openrouter.ai/docs/features/provider-routing) for controlling which underlying provider your request is routed to.
+
+You can specify these using the OpenRouter JSON format, then pass that to LLM using the `-o provider '{JSON goes here}` option:
+
+```bash
+llm -m openrouter/meta-llama/llama-3.1-8b-instruct hi \
+  -o provider '{"quantizations": ["fp8"]}'
+```
+This specifies that you would like only providers that [support fp8 quantization](https://openrouter.ai/docs/features/provider-routing#example-requesting-fp8-quantization) for that model.
+
 ### Incorporating search results from Exa
 
 OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.

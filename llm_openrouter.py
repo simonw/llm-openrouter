@@ -2,8 +2,8 @@ import click
 import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
-from pydantic import Field
-from typing import Optional
+from pydantic import Field, field_validator
+from typing import Optional, Union
 import json
 import time
 import httpx
@@ -23,12 +23,34 @@ class _mixin:
             description="Use relevant search results from Exa",
             default=None,
         )
+        provider: Optional[Union[dict, str]] = Field(
+            description=("JSON object to control provider routing"),
+            default=None,
+        )
+
+        @field_validator("provider")
+        def validate_provider(cls, provider):
+            if provider is None:
+                return None
+
+            if isinstance(provider, str):
+                try:
+                    return json.loads(provider)
+                except json.JSONDecodeError:
+                    raise ValueError("Invalid JSON in provider string")
+            return provider
 
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
+        kwargs.pop("provider", None)
+        kwargs.pop("online", None)
+        extra_body = {}
         if prompt.options.online:
-            kwargs.pop("online", None)
-            kwargs["extra_body"] = {"plugins": [{"id": "web"}]}
+            extra_body["plugins"] = [{"id": "web"}]
+        if prompt.options.provider:
+            extra_body["provider"] = prompt.options.provider
+        if extra_body:
+            kwargs["extra_body"] = extra_body
         return kwargs
 
 
