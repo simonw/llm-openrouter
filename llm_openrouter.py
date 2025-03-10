@@ -143,9 +143,10 @@ def register_commands(cli):
         click.echo(json.dumps(all_models, indent=2))
 
     @openrouter.command()
-    def key_info():
+    @click.option("--key", help="Key to inspect")
+    def key(key):
         "View information and rate limits for the current key"
-        key = llm.get_key("", "openrouter", "OPENROUTER_KEY")
+        key = llm.get_key(key, "openrouter", "OPENROUTER_KEY")
         response = httpx.get(
             "https://openrouter.ai/api/v1/auth/key",
             headers={"Authorization": f"Bearer {key}"},

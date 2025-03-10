@@ -170,10 +170,10 @@ llm openrouter models --free
 
 ### Information about your API key
 
-The `llm openrouter key-info` command shows you information about your current API key, including rate limits:
+The `llm openrouter key` command shows you information about your current API key, including rate limits:
 
 ```bash
-llm openrouter key-info
+llm openrouter key
 ```
 Example output:
 ```json
@@ -188,6 +188,13 @@ Example output:
     "interval": "10s"
   }
 }
+```
+This will default to inspecting the key you have set using `llm keys set openrouter` or using the `OPENROUTER_KEY` environment variable.
+
+You can inspect a different key by passing the key itself - or the name of the key in the `llm keys` list - as the `--key` option:
+
+```bash
+llm openrouter key --key sk-xxx
 ```
 
 ## Development
