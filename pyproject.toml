@@ -1,6 +1,6 @@
 [project]
 name = "llm-openrouter"
-version = "0.3"
+version = "0.4"
 description = "LLM plugin for models hosted by OpenRouter"
 readme = "README.md"
 authors = [{name = "Simon Willison"}]
@@ -9,7 +9,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License"
 ]
 dependencies = [
-    "llm>=0.19",
+    "llm>=0.23",
     "httpx",
     "openai>=1.57.0",
 ]
