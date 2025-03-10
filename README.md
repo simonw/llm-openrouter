@@ -61,6 +61,46 @@ llm -m openrouter/anthropic/claude-3.5-sonnet 'describe this image' -a https://s
 llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 ```
 
+### Listing models
+
+The `llm models -q openrouter` command will display all available models, or you can use this command to see more detailed JSON:
+
+```bash
+llm openrouter models
+```
+Output starts like this:
+```json
+[
+  {
+    "id": "microsoft/phi-4-multimodal-instruct",
+    "name": "Microsoft: Phi 4 Multimodal Instruct",
+    "created": 1741396284,
+    "description": "Phi-4 Multimodal Instruct is a versatile...",
+    "context_length": 131072,
+    "architecture": {
+      "modality": "text+image->text",
+      "tokenizer": "Other",
+      "instruct_type": null
+    },
+    "pricing": {
+      "prompt": "0.00000007",
+      "completion": "0.00000014",
+      "image": "0.0002476",
+      "request": "0",
+      "input_cache_read": "0",
+      "input_cache_write": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    },
+    "top_provider": {
+      "context_length": 131072,
+      "max_completion_tokens": null,
+      "is_moderated": false
+    },
+    "per_request_limits": null
+  }
+```
+
 ### Incorporating search results from Exa
 
 OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.

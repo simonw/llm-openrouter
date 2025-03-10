@@ -128,6 +128,11 @@ def register_commands(cli):
         "Commands relating to the llm-openrouter plugin"
 
     @openrouter.command()
+    def models():
+        "JSON list of OpenRouter models"
+        click.echo(json.dumps(get_openrouter_models(), indent=2))
+
+    @openrouter.command()
     def key_info():
         "View information and rate limits for the current key"
         key = llm.get_key("", "openrouter", "LLM_OPENROUTER_KEY")
