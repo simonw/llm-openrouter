@@ -144,6 +144,26 @@ The `llm models -q openrouter` command will display all available models, or you
 llm openrouter models
 ```
 Output starts like this:
+```yaml
+- id: latitudegames/wayfarer-large-70b-llama-3.3
+  name: LatitueGames: Wayfarer Large 70B Llama 3.3
+  context_length: 128,000
+  architecture: text->text Llama3
+  pricing: prompt $0.7/M, completion $0.7/M
+
+- id: thedrummer/skyfall-36b-v2
+  name: TheDrummer: Skyfall 36B V2
+  context_length: 64,000
+  architecture: text->text Other
+  pricing: prompt $0.5/M, completion $0.5/M
+
+- id: microsoft/phi-4-multimodal-instruct
+  name: Microsoft: Phi 4 Multimodal Instruct
+  context_length: 131,072
+  architecture: text+image->text Other
+  pricing: prompt $0.07/M, completion $0.14/M, image $0.2476/K
+```
+Add `--json` to get back JSON instead, which looks like this:
 ```json
 [
   {

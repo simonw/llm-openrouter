@@ -152,8 +152,9 @@ def register_commands(cli):
 
     @openrouter.command()
     @click.option("--free", is_flag=True, help="List free models")
-    def models(free):
-        "JSON list of OpenRouter models"
+    @click.option("json_", "--json", is_flag=True, help="Output as JSON")
+    def models(free, json_):
+        "List of OpenRouter models"
         if free:
             all_models = [
                 model
@@ -162,7 +163,25 @@ def register_commands(cli):
             ]
         else:
             all_models = get_openrouter_models()
-        click.echo(json.dumps(all_models, indent=2))
+        if json_:
+            click.echo(json.dumps(all_models, indent=2))
+        else:
+            # Custom format
+            for model in all_models:
+                bits = []
+                bits.append(f"- id: {model['id']}")
+                bits.append(f"  name: {model['name']}")
+                bits.append(f"  context_length: {model['context_length']:,}")
+                architecture = model.get("architecture", None)
+                if architecture:
+                    bits.append(
+                        f"  architecture: "
+                        + (" ".join(value for value in architecture.values() if value))
+                    )
+                pricing = format_pricing(model["pricing"])
+                if pricing:
+                    bits.append("  pricing: " + pricing)
+                click.echo("\n".join(bits) + "\n")
 
     @openrouter.command()
     @click.option("--key", help="Key to inspect")
@@ -175,3 +194,47 @@ def register_commands(cli):
         )
         response.raise_for_status()
         click.echo(json.dumps(response.json()["data"], indent=2))
+
+
+def format_price(key, price_str):
+    """Format a price value with appropriate scaling and no trailing zeros."""
+    price = float(price_str)
+
+    if price == 0:
+        return None
+
+    # Determine scale based on magnitude
+    if price < 0.0001:
+        scale = 1000000
+        suffix = "/M"
+    elif price < 0.001:
+        scale = 1000
+        suffix = "/K"
+    elif price < 1:
+        scale = 1000
+        suffix = "/K"
+    else:
+        scale = 1
+        suffix = ""
+
+    # Scale the price
+    scaled_price = price * scale
+
+    # Format without trailing zeros
+    # Convert to string and remove trailing .0
+    price_str = (
+        f"{scaled_price:.10f}".rstrip("0").rstrip(".")
+        if "." in f"{scaled_price:.10f}"
+        else f"{scaled_price:.0f}"
+    )
+
+    return f"{key} ${price_str}{suffix}"
+
+
+def format_pricing(pricing_dict):
+    formatted_parts = []
+    for key, value in pricing_dict.items():
+        formatted_price = format_price(key, value)
+        if formatted_price:
+            formatted_parts.append(formatted_price)
+    return ", ".join(formatted_parts)
