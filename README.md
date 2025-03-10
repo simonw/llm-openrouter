@@ -100,6 +100,10 @@ Output starts like this:
     "per_request_limits": null
   }
 ```
+Add `--free` for a list of just the models that are [available for free](https://openrouter.ai/models?max_price=0).
+```bash
+llm openrouter models --free
+```
 
 ### Incorporating search results from Exa
 

@@ -128,9 +128,18 @@ def register_commands(cli):
         "Commands relating to the llm-openrouter plugin"
 
     @openrouter.command()
-    def models():
+    @click.option("--free", is_flag=True, help="List free models")
+    def models(free):
         "JSON list of OpenRouter models"
-        click.echo(json.dumps(get_openrouter_models(), indent=2))
+        if free:
+            all_models = [
+                model
+                for model in get_openrouter_models()
+                if model["id"].endswith(":free")
+            ]
+        else:
+            all_models = get_openrouter_models()
+        click.echo(json.dumps(all_models, indent=2))
 
     @openrouter.command()
     def key_info():
