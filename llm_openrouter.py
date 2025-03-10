@@ -51,7 +51,7 @@ class OpenRouterAsyncChat(_mixin, AsyncChat):
 @llm.hookimpl
 def register_models(register):
     # Only do this if the openrouter key is set
-    key = llm.get_key("", "openrouter", "LLM_OPENROUTER_KEY")
+    key = llm.get_key("", "openrouter", "OPENROUTER_KEY")
     if not key:
         return
     for model_definition in get_openrouter_models():
@@ -145,7 +145,7 @@ def register_commands(cli):
     @openrouter.command()
     def key_info():
         "View information and rate limits for the current key"
-        key = llm.get_key("", "openrouter", "LLM_OPENROUTER_KEY")
+        key = llm.get_key("", "openrouter", "OPENROUTER_KEY")
         response = httpx.get(
             "https://openrouter.ai/api/v1/auth/key",
             headers={"Authorization": f"Bearer {key}"},

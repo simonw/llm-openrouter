@@ -12,10 +12,6 @@ def user_path(tmpdir):
 def env_setup(monkeypatch, user_path):
     monkeypatch.setenv("LLM_USER_PATH", str(user_path))
     monkeypatch.setenv(
-        "LLM_OPENROUTER_KEY",
-        "sk-...",
-    )
-    monkeypatch.setenv(
         "OPENROUTER_KEY",
         "sk-...",
     )
