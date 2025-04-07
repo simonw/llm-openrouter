@@ -188,7 +188,7 @@ def register_commands(cli):
                 if architecture:
                     bits.append(
                         f"  architecture: "
-                        + (" ".join(value for value in architecture.values() if value))
+                        + (" ".join(str(value) for value in architecture.values() if value))
                     )
                 bits.append(f"  supports_schema: {model['supports_schema']}")
                 pricing = format_pricing(model["pricing"])
