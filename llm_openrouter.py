@@ -186,10 +186,12 @@ def register_commands(cli):
                 bits.append(f"  context_length: {model['context_length']:,}")
                 architecture = model.get("architecture", None)
                 if architecture:
-                    bits.append(
-                        f"  architecture: "
-                        + (" ".join(str(value) for value in architecture.values() if value))
-                    )
+                    arch_values = [
+                        str(value) for key, value in architecture.items() 
+                        # `modality` key is enough, exclude these others
+                        if value and key not in ["input_modalities", "output_modalities"]
+                    ]
+                    bits.append(f"  architecture: {' '.join(arch_values)}")
                 bits.append(f"  supports_schema: {model['supports_schema']}")
                 pricing = format_pricing(model["pricing"])
                 if pricing:
