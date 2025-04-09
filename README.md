@@ -229,6 +229,35 @@ You can inspect a different key by passing the key itself - or the name of the k
 llm openrouter key --key sk-xxx
 ```
 
+### Saved Configurations
+
+`llm-openrouter` now supports saving model configurations with specific options under aliases. This allows you to quickly reuse configurations without specifying options every time.
+
+To save a configuration:
+```bash
+llm openrouter save openrouter/meta-llama/llama-4-scout \
+    --name scout-groq-online \
+    -o provider '{"order":["Groq"],"allow_fallbacks":true}' \
+    -o online 1
+```
+
+To use:
+```bash
+llm -m scout-groq-online "what is the knowledge cutoff date of 'gemini-2.5'"
+```
+> According to [x.com](https://x.com/ForrestPKnight/status/1905371920159088834), the training data cut off for Gemini 2.5 Pro is March 2025. 
+
+
+To list saved configurations:
+```bash
+llm openrouter list-saved
+```
+
+To remove a saved configuration:
+```bash
+llm openrouter remove-saved mistral-groq
+```
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
