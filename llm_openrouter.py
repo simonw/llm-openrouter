@@ -340,10 +340,15 @@ def register_commands(cli):
                 bits.append(f"  context_length: {model['context_length']:,}")
                 architecture = model.get("architecture", None)
                 if architecture:
-                    bits.append(
-                        f"  architecture: "
-                        + (" ".join(value for value in architecture.values() if value))
-                    )
+                    processed_values = []
+                    for value in architecture.values():
+                        if isinstance(value, list):
+                            # Join list items into a comma-separated string
+                            processed_values.append(", ".join(str(item) for item in value if item))
+                        elif value: # Check if value is truthy (not None, empty string, etc.)
+                            processed_values.append(str(value)) # Ensure it's a string
+                    if processed_values: # Only add if there are values to show
+                        bits.append(f"  architecture: {' '.join(processed_values)}")
                 bits.append(f"  supports_schema: {model['supports_schema']}")
                 pricing = format_pricing(model["pricing"])
                 if pricing:
