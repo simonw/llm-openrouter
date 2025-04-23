@@ -19,18 +19,25 @@ TINY_PNG = (
 def test_prompt():
     model = llm.get_model("openrouter/openai/gpt-4o")
     response = model.prompt("Two names for a pet pelican, be brief")
-    assert str(response) == snapshot("Gully or Skipper")
+    assert str(response) == snapshot("Beaker or Zephyr.")
     response_dict = dict(response.response_json)
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Gully or Skipper",
+            "content": "Beaker or Zephyr.",
             "role": "assistant",
             "finish_reason": "stop",
-            "usage": {"completion_tokens": 5, "prompt_tokens": 17, "total_tokens": 22},
+            "usage": {
+                "completion_tokens": 7,
+                "prompt_tokens": 17,
+                "total_tokens": 24,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+                "prompt_tokens_details": {"cached_tokens": 0},
+                "cost": 0.0001125,
+            },
             "object": "chat.completion.chunk",
             "model": "openai/gpt-4o",
-            "created": 1731200404,
+            "created": 1745444094,
         }
     )
 
@@ -55,17 +62,24 @@ def test_image_prompt():
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
     )
-    assert str(response) == snapshot("Red and green")
+    assert str(response) == snapshot("Bright Red Green")
     response_dict = response.response_json
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Red and green",
+            "content": "Bright Red Green",
             "role": "assistant",
-            "finish_reason": "end_turn",
-            "usage": {"completion_tokens": 7, "prompt_tokens": 82, "total_tokens": 89},
+            "finish_reason": "stop",
+            "usage": {
+                "completion_tokens": 7,
+                "prompt_tokens": 1682,
+                "total_tokens": 1689,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+                "prompt_tokens_details": {"cached_tokens": 0},
+                "cost": 0.005151,
+            },
             "object": "chat.completion.chunk",
             "model": "anthropic/claude-3.5-sonnet",
-            "created": 1731200406,
+            "created": 1745444099,
         }
     )

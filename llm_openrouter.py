@@ -18,7 +18,7 @@ def get_openrouter_models():
     schema_supporting_ids = {
         model["id"]
         for model in fetch_cached_json(
-            url="http://openrouter.ai/api/v1/models?supported_parameters=structured_outputs",
+            url="https://openrouter.ai/api/v1/models?supported_parameters=structured_outputs",
             path=llm.user_dir() / "openrouter_models_structured_outputs.json",
             cache_timeout=3600,
         )["data"]
@@ -186,10 +186,14 @@ def register_commands(cli):
                 bits.append(f"  context_length: {model['context_length']:,}")
                 architecture = model.get("architecture", None)
                 if architecture:
-                    bits.append(
-                        f"  architecture: "
-                        + (" ".join(value for value in architecture.values() if value))
-                    )
+                    bits.append("  architecture:")
+                    for key, value in architecture.items():
+                        bits.append(
+                            "    "
+                            + key
+                            + ": "
+                            + (value if isinstance(value, str) else json.dumps(value))
+                        )
                 bits.append(f"  supports_schema: {model['supports_schema']}")
                 pricing = format_pricing(model["pricing"])
                 if pricing:

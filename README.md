@@ -245,7 +245,8 @@ To run the tests:
 ```bash
 pytest
 ```
-To add new recordings and snapshots, run:
+To update recordings and snapshots, run:
 ```bash
-pytest --record-mode=once --inline-snapshot=create
+PYTEST_OPENROUTER_KEY="$(llm keys get openrouter)" \
+  pytest --record-mode=rewrite --inline-snapshot=fix
 ```
