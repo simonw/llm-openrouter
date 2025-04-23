@@ -72,7 +72,7 @@ And look for models that list these attachment types:
 
 ```
   Attachment types:
-    image/gif, image/jpeg, image/png, image/webp
+    application/pdf, image/gif, image/jpeg, image/png, image/webp
 ```
 You can feed these models images as URLs or file paths, for example:
 
