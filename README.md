@@ -229,6 +229,27 @@ You can inspect a different key by passing the key itself - or the name of the k
 llm openrouter key --key sk-xxx
 ```
 
+## Prompt caching
+### Command Line Example
+```bash
+llm -m "openrouter/google/gemini-2.5-pro-preview-03-25" "Summarize this text" --cache-prompt True --cache-system True
+```
+
+### Python API Example
+
+```python
+import llm
+
+response = llm.complete(
+    "Summarize this text", 
+    model="openrouter/anthropic/claude-3-opus-20240229",
+    options={
+        "cache_prompt": True,
+        "cache_system": True
+    }
+)
+```
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:

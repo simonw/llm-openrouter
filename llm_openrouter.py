@@ -3,7 +3,7 @@ import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
 from pydantic import Field, field_validator
-from typing import Optional, Union
+from typing import Optional, Union, List, Dict, Any
 import json
 import time
 import httpx
@@ -39,6 +39,14 @@ class _mixin:
             description=("JSON object to control provider routing"),
             default=None,
         )
+        cache_prompt: Optional[bool] = Field(
+            description="Whether to cache the user prompt for future use (for supported providers like Anthropic and Gemini)",
+            default=False,
+        )
+        cache_system: Optional[bool] = Field(
+            description="Whether to cache the system prompt for future use (for supported providers like Anthropic and Gemini)",
+            default=False,
+        )
 
         @field_validator("provider")
         def validate_provider(cls, provider):
@@ -52,10 +60,26 @@ class _mixin:
                     raise ValueError("Invalid JSON in provider string")
             return provider
 
+    def __init__(self, model_id, **kwargs):
+        # Initialize with standard headers
+        headers = kwargs.get("headers", {})
+        if not headers:
+            headers = {"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"}
+        kwargs["headers"] = headers
+        
+        # Check if it's an Anthropic model and add the appropriate header
+        if "claude" in model_id.lower():
+            headers["anthropic-beta"] = "prompt-caching-2024-07-31"
+        
+        super().__init__(model_id, **kwargs)
+    
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
         kwargs.pop("provider", None)
         kwargs.pop("online", None)
+        kwargs.pop("cache_prompt", None)
+        kwargs.pop("cache_system", None)
+        
         extra_body = {}
         if prompt.options.online:
             extra_body["plugins"] = [{"id": "web"}]
@@ -63,7 +87,186 @@ class _mixin:
             extra_body["provider"] = prompt.options.provider
         if extra_body:
             kwargs["extra_body"] = extra_body
+        
         return kwargs
+    
+    def _is_anthropic_model(self, prompt):
+        """Check if the model is from Anthropic or if provider routing to Anthropic is specified"""
+        provider = prompt.options.provider
+        if provider and isinstance(provider, dict):
+            return provider.get("name") == "anthropic"
+        return "claude" in self.model_id.lower()
+    
+    def _is_gemini_model(self, prompt):
+        """Check if the model is from Google Gemini or if provider routing to Gemini is specified"""
+        provider = prompt.options.provider
+        if provider and isinstance(provider, dict):
+            return provider.get("name") == "google"
+        return "gemini" in self.model_id.lower()
+
+    def build_messages(self, prompt, conversation):
+        messages = []
+        current_system = None
+        cache_control_count = 0
+        max_cache_control_blocks = 2  # Similar to Claude's limit
+        
+        # Get previous responses
+        if conversation is not None:
+            for prev_response in conversation.responses:
+                # System messages
+                if (
+                    prev_response.prompt.system
+                    and prev_response.prompt.system != current_system
+                ):
+                    if prompt.options.cache_system is not False and cache_control_count < max_cache_control_blocks:
+                        # For Anthropic and Gemini, we need to format system messages with cache_control
+                        if self._is_anthropic_model(prompt) or self._is_gemini_model(prompt):
+                            system_content = [
+                                {
+                                    "type": "text",
+                                    "text": prev_response.prompt.system,
+                                    "cache_control": {"type": "ephemeral"}
+                                }
+                            ]
+                            messages.append({"role": "system", "content": system_content})
+                            cache_control_count += 1
+                        else:
+                            # For other models, use the standard format
+                            messages.append({"role": "system", "content": prev_response.prompt.system})
+                    else:
+                        # Standard format without caching
+                        messages.append({"role": "system", "content": prev_response.prompt.system})
+                    current_system = prev_response.prompt.system
+                
+                # User messages with attachments
+                if prev_response.attachments:
+                    attachment_message = []
+                    if prev_response.prompt.prompt:
+                        text_content = {"type": "text", "text": prev_response.prompt.prompt}
+                        if prompt.options.cache_prompt is not False and cache_control_count < max_cache_control_blocks:
+                            if self._is_anthropic_model(prompt) or self._is_gemini_model(prompt):
+                                text_content["cache_control"] = {"type": "ephemeral"}
+                                cache_control_count += 1
+                        attachment_message.append(text_content)
+                    
+                    for attachment in prev_response.attachments:
+                        attachment_message.append(self._format_attachment(attachment))
+                    
+                    messages.append({"role": "user", "content": attachment_message})
+                else:
+                    # User messages without attachments
+                    if prompt.options.cache_prompt is not False and cache_control_count < max_cache_control_blocks:
+                        if self._is_anthropic_model(prompt) or self._is_gemini_model(prompt):
+                            messages.append({
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": prev_response.prompt.prompt,
+                                        "cache_control": {"type": "ephemeral"}
+                                    }
+                                ]
+                            })
+                            cache_control_count += 1
+                        else:
+                            # Standard format for other models
+                            messages.append({"role": "user", "content": prev_response.prompt.prompt})
+                    else:
+                        # Standard format without caching
+                        messages.append({"role": "user", "content": prev_response.prompt.prompt})
+                
+                # Assistant messages
+                messages.append({"role": "assistant", "content": prev_response.text_or_raise()})
+        
+        # Current system message
+        if prompt.system and prompt.system != current_system:
+            if prompt.options.cache_system is not False and cache_control_count < max_cache_control_blocks:
+                if self._is_anthropic_model(prompt) or self._is_gemini_model(prompt):
+                    system_content = [
+                        {
+                            "type": "text",
+                            "text": prompt.system,
+                            "cache_control": {"type": "ephemeral"}
+                        }
+                    ]
+                    messages.append({"role": "system", "content": system_content})
+                    cache_control_count += 1
+                else:
+                    # Standard format for other models
+                    messages.append({"role": "system", "content": prompt.system})
+            else:
+                # Standard format without caching
+                messages.append({"role": "system", "content": prompt.system})
+        
+        # Current user message
+        if not prompt.attachments:
+            if prompt.options.cache_prompt is not False and cache_control_count < max_cache_control_blocks:
+                if self._is_anthropic_model(prompt) or self._is_gemini_model(prompt):
+                    messages.append({
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt.prompt or "",
+                                "cache_control": {"type": "ephemeral"}
+                            }
+                        ]
+                    })
+                else:
+                    # Standard format for other models
+                    messages.append({"role": "user", "content": prompt.prompt or ""})
+            else:
+                # Standard format without caching
+                messages.append({"role": "user", "content": prompt.prompt or ""})
+        else:
+            # Handle attachments
+            attachment_message = []
+            if prompt.prompt:
+                text_content = {"type": "text", "text": prompt.prompt}
+                if prompt.options.cache_prompt is not False and cache_control_count < max_cache_control_blocks:
+                    if self._is_anthropic_model(prompt) or self._is_gemini_model(prompt):
+                        text_content["cache_control"] = {"type": "ephemeral"}
+                attachment_message.append(text_content)
+            
+            for attachment in prompt.attachments:
+                attachment_message.append(self._format_attachment(attachment))
+            
+            messages.append({"role": "user", "content": attachment_message})
+        
+        return messages
+    
+    def _format_attachment(self, attachment):
+        """Format an attachment for the OpenRouter API"""
+        media_type = attachment.resolve_type()
+        
+        if media_type.startswith("image/"):
+            return {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": media_type,
+                    "data": attachment.base64_content(),
+                }
+            }
+        elif media_type == "application/pdf":
+            return {
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": media_type,
+                    "data": attachment.base64_content(),
+                }
+            }
+        else:
+            # Generic attachment
+            return {
+                "type": "file",
+                "source": {
+                    "type": "base64",
+                    "media_type": media_type,
+                    "data": attachment.base64_content(),
+                }
+            }
 
 
 class OpenRouterChat(_mixin, Chat):
