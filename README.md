@@ -125,6 +125,28 @@ llm -m openrouter/meta-llama/llama-3.1-8b-instruct hi \
 ```
 This specifies that you would like only providers that [support fp8 quantization](https://openrouter.ai/docs/features/provider-routing#example-requesting-fp8-quantization) for that model.
 
+### Reasoning
+
+OpenRouter let users [control how reasoning models do so](https://openrouter.ai/docs/use-cases/reasoning-tokens). They support both effort- and count-based reasoning token allocation. At the time of writing, only some OpenAI, Anthropic, Gemini, and Grok models support this parameter.
+
+```bash
+# Set reasoning effort level (high, medium, low)
+llm -m openrouter/openai/o3-mini 'solve this puzzle' \
+  -o reasoning '{"effort": "high"}'
+
+# Set maximum reasoning tokens
+llm -m openrouter/anthropic/claude-3.7-sonnet 'think step by step' \
+  -o reasoning '{"max_tokens": 2000}'
+
+# Enable reasoning but exclude it from the response
+llm -m openrouter/google/gemini-2.5-pro 'analyze this data' \
+  -o reasoning '{"exclude": true}'
+
+# Enable reasoning with default settings
+llm -m openrouter/openai/o3-mini 'help me debug this' \
+  -o reasoning '{"enabled": true}'
+```
+
 ### Incorporating search results from Exa
 
 OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.

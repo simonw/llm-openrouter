@@ -39,6 +39,10 @@ class _mixin:
             description=("JSON object to control provider routing"),
             default=None,
         )
+        reasoning: Optional[Union[dict, str]] = Field(
+            description=("JSON object to control reasoning tokens"),
+            default=None,
+        )
 
         @field_validator("provider")
         def validate_provider(cls, provider):
@@ -52,15 +56,30 @@ class _mixin:
                     raise ValueError("Invalid JSON in provider string")
             return provider
 
+        @field_validator("reasoning")
+        def validate_reasoning(cls, reasoning):
+            if reasoning is None:
+                return None
+
+            if isinstance(reasoning, str):
+                try:
+                    return json.loads(reasoning)
+                except json.JSONDecodeError:
+                    raise ValueError("Invalid JSON in reasoning string")
+            return reasoning
+
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
         kwargs.pop("provider", None)
         kwargs.pop("online", None)
+        kwargs.pop("reasoning", None)
         extra_body = {}
         if prompt.options.online:
             extra_body["plugins"] = [{"id": "web"}]
         if prompt.options.provider:
             extra_body["provider"] = prompt.options.provider
+        if prompt.options.reasoning:
+            extra_body["reasoning"] = prompt.options.reasoning
         if extra_body:
             kwargs["extra_body"] = extra_body
         return kwargs
