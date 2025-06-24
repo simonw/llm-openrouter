@@ -229,7 +229,6 @@ You can inspect a different key by passing the key itself - or the name of the k
 llm openrouter key --key sk-xxx
 ```
 
-<<<<<<< HEAD
 ## Prompt caching
 ### Command Line Example
 ```bash
@@ -249,7 +248,8 @@ response = llm.complete(
         "cache_system": True
     }
 )
-=======
+```
+
 ### Saved Configurations
 
 `llm-openrouter` now supports saving model configurations with specific options under aliases. This allows you to quickly reuse configurations without specifying options every time.
@@ -277,7 +277,6 @@ llm openrouter list-saved
 To remove a saved configuration:
 ```bash
 llm openrouter remove-saved mistral-groq
->>>>>>> saved-options
 ```
 
 ## Development
