@@ -38,17 +38,17 @@ llm models list
 You should see a list that looks something like this:
 ```
 OpenRouter: openrouter/openai/gpt-3.5-turbo
-OpenRouter: openrouter/anthropic/claude-2
+OpenRouter: openrouter/anthropic/claude-sonnet-4
 OpenRouter: openrouter/meta-llama/llama-2-70b-chat
 ...
 ```
 To run a prompt against a model, pass its full model ID to the `-m` option, like this:
 ```bash
-llm -m openrouter/anthropic/claude-2 "Five spooky names for a pet tarantula"
+llm -m openrouter/anthropic/claude-sonnet-4 "Five spooky names for a pet tarantula"
 ```
 You can set a shorter alias for a model using the `llm aliases` command like so:
 ```bash
-llm aliases set claude openrouter/anthropic/claude-2
+llm aliases set claude openrouter/anthropic/claude-sonnet-4
 ```
 Now you can prompt Claude using:
 ```bash
