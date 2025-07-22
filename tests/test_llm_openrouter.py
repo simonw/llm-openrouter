@@ -1,4 +1,6 @@
 import llm
+from llm.tools import llm_version
+
 import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
@@ -79,5 +81,54 @@ def test_image_prompt():
             "object": "chat.completion.chunk",
             "model": "anthropic/claude-3.5-sonnet",
             "created": 1753217933,
+        }
+    )
+
+
+@pytest.mark.vcr
+def test_tool_calls():
+    model = llm.get_model("openrouter/openai/gpt-4.1-mini")
+
+    chain = model.chain(
+        "What is the current llm version?",
+        tools=[llm_version],
+    )
+
+    responses = list(chain.responses())
+
+    responses[0].response_json.pop("id")  # differs between requests
+    assert responses[0].response_json == snapshot(
+        {
+            "content": '',
+            "role": "assistant",
+            "finish_reason": 'tool_calls',
+            "usage": {
+                "completion_tokens": 11,
+                "prompt_tokens": 48,
+                "total_tokens": 59,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+                "prompt_tokens_details": {"cached_tokens": 0},
+                "cost": 3.68e-05, 'is_byok': False},
+            "object": "chat.completion.chunk",
+            "model": "openai/gpt-4.1-mini",
+            "created": 1753221411,
+        }
+    )
+
+    responses[1].response_json.pop("id")  # differs between requests
+    assert responses[1].response_json == snapshot(
+        {
+            "content": 'The current installed version of the LLM is 0.26.',
+            "role": "assistant",
+            "finish_reason": 'stop',
+            "usage": {
+                "completion_tokens": 15,
+                "prompt_tokens": 71,
+                "total_tokens": 86,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+                "prompt_tokens_details": {"cached_tokens": 0},
+                "cost": 5.24e-05, 'is_byok': False}, "object": "chat.completion.chunk",
+            "model": "openai/gpt-4.1-mini",
+            "created": 1753221413,
         }
     )
