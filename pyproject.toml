@@ -1,6 +1,6 @@
 [project]
 name = "llm-openrouter"
-version = "0.4.1"
+version = "0.4.2"
 description = "LLM plugin for models hosted by OpenRouter"
 readme = "README.md"
 authors = [{name = "Simon Willison"}]
