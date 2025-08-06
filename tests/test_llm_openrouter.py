@@ -85,3 +85,61 @@ def test_image_prompt():
             "created": 1754441344,
         }
     )
+
+
+@pytest.mark.vcr
+def test_tool_calls():
+    model = llm.get_model("openrouter/openai/gpt-4.1-mini")
+
+    def llm_version() -> str:
+        "Return the installed version of llm"
+        return "0.0+test"
+
+    chain = model.chain(
+        "What is the current llm version?",
+        tools=[llm_version],
+    )
+
+    responses = list(chain.responses())
+
+    responses[0].response_json.pop("id")  # differs between requests
+    responses[0].response_json.pop("created")  # differs between requests
+    assert responses[0].response_json == snapshot(
+        {
+            "content": "",
+            "role": "assistant",
+            "finish_reason": "tool_calls",
+            "usage": {
+                "completion_tokens": 11,
+                "prompt_tokens": 48,
+                "total_tokens": 59,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+                "prompt_tokens_details": {"cached_tokens": 0},
+                "cost": 3.68e-05,
+                "is_byok": False,
+            },
+            "object": "chat.completion.chunk",
+            "model": "openai/gpt-4.1-mini",
+        }
+    )
+
+    responses[1].response_json.pop("id")  # differs between requests
+    responses[1].response_json.pop("created")  # differs between requests
+    assert responses[1].response_json == snapshot(
+        {
+            "content": "The current LLM version is 0.0+test.",
+            "role": "assistant",
+            "finish_reason": "stop",
+            "usage": {
+                "completion_tokens": 14,
+                "prompt_tokens": 73,
+                "total_tokens": 87,
+                "completion_tokens_details": {"reasoning_tokens": 0},
+                "prompt_tokens_details": {"cached_tokens": 0},
+                "cost": 5.16e-05,
+                "is_byok": False,
+            },
+            "object": "chat.completion.chunk",
+            "model": "openai/gpt-4.1-mini",
+        }
+    )
