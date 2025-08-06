@@ -250,3 +250,5 @@ To update recordings and snapshots, run:
 PYTEST_OPENROUTER_KEY="$(llm keys get openrouter)" \
   pytest --record-mode=rewrite --inline-snapshot=fix
 ```
+
+If tests against additional models are added, update `tests/models_persister.py` to preserve those model ids in the recordings.
