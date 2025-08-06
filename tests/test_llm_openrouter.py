@@ -19,26 +19,26 @@ TINY_PNG = (
 def test_prompt():
     model = llm.get_model("openrouter/openai/gpt-4o")
     response = model.prompt("Two names for a pet pelican, be brief")
-    assert str(response) == snapshot("Skyler and Splash.")
+    assert str(response) == snapshot("Pebbles and Skipper.")
     response_dict = dict(response.response_json)
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Skyler and Splash.",
+            "content": "Pebbles and Skipper.",
             "role": "assistant",
             "finish_reason": "stop",
             "usage": {
-                "completion_tokens": 5,
+                "completion_tokens": 6,
                 "prompt_tokens": 17,
-                "total_tokens": 22,
+                "total_tokens": 23,
                 "completion_tokens_details": {"reasoning_tokens": 0},
                 "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 9.25e-05,
+                "cost": 0.0001025,
                 "is_byok": False,
             },
             "object": "chat.completion.chunk",
             "model": "openai/gpt-4o",
-            "created": 1754441226,
+            "created": 1754441342,
         }
     )
 
@@ -63,12 +63,12 @@ def test_image_prompt():
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
     )
-    assert str(response) == snapshot("Red green sequence squares")
+    assert str(response) == snapshot("Red green geometric shapes")
     response_dict = response.response_json
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Red green sequence squares",
+            "content": "Red green geometric shapes",
             "role": "assistant",
             "finish_reason": "stop",
             "usage": {
@@ -82,6 +82,6 @@ def test_image_prompt():
             },
             "object": "chat.completion.chunk",
             "model": "anthropic/claude-3.5-sonnet",
-            "created": 1754441227,
+            "created": 1754441344,
         }
     )
