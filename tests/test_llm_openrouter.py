@@ -19,25 +19,26 @@ TINY_PNG = (
 def test_prompt():
     model = llm.get_model("openrouter/openai/gpt-4o")
     response = model.prompt("Two names for a pet pelican, be brief")
-    assert str(response) == snapshot("Beaker or Zephyr.")
+    assert str(response) == snapshot("Skyler and Splash.")
     response_dict = dict(response.response_json)
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Beaker or Zephyr.",
+            "content": "Skyler and Splash.",
             "role": "assistant",
             "finish_reason": "stop",
             "usage": {
-                "completion_tokens": 7,
+                "completion_tokens": 5,
                 "prompt_tokens": 17,
-                "total_tokens": 24,
+                "total_tokens": 22,
                 "completion_tokens_details": {"reasoning_tokens": 0},
                 "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 0.0001125,
+                "cost": 9.25e-05,
+                "is_byok": False,
             },
             "object": "chat.completion.chunk",
             "model": "openai/gpt-4o",
-            "created": 1745444094,
+            "created": 1754441226,
         }
     )
 
@@ -49,7 +50,7 @@ def test_llm_models():
     assert result.exit_code == 0, result.output
     fragments = (
         "OpenRouter: openrouter/openai/gpt-3.5-turbo",
-        "OpenRouter: openrouter/anthropic/claude-2",
+        "OpenRouter: openrouter/anthropic/claude-sonnet-4",
     )
     for fragment in fragments:
         assert fragment in result.output
@@ -62,24 +63,25 @@ def test_image_prompt():
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
     )
-    assert str(response) == snapshot("Bright Red Green")
+    assert str(response) == snapshot("Red green sequence squares")
     response_dict = response.response_json
     response_dict.pop("id")  # differs between requests
     assert response_dict == snapshot(
         {
-            "content": "Bright Red Green",
+            "content": "Red green sequence squares",
             "role": "assistant",
             "finish_reason": "stop",
             "usage": {
                 "completion_tokens": 7,
-                "prompt_tokens": 1682,
-                "total_tokens": 1689,
+                "prompt_tokens": 82,
+                "total_tokens": 89,
                 "completion_tokens_details": {"reasoning_tokens": 0},
                 "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 0.005151,
+                "cost": 0.000351,
+                "is_byok": False,
             },
             "object": "chat.completion.chunk",
             "model": "anthropic/claude-3.5-sonnet",
-            "created": 1745444099,
+            "created": 1754441227,
         }
     )
