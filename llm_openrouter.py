@@ -1,4 +1,5 @@
 import click
+from enum import Enum
 import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
@@ -32,6 +33,12 @@ def has_parameter(model_definition, parameter):
         return False
 
 
+class ReasoningEffortEnum(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+
+
 class _mixin:
     class Options(Chat.Options):
         online: Optional[bool] = Field(
@@ -40,6 +47,18 @@ class _mixin:
         )
         provider: Optional[Union[dict, str]] = Field(
             description=("JSON object to control provider routing"),
+            default=None,
+        )
+        reasoning_effort: Optional[ReasoningEffortEnum] = Field(
+            description='One of "high", "medium", or "low" to control reasoning effort',
+            default=None,
+        )
+        reasoning_max_tokens: Optional[int] = Field(
+            description="Specific token limit to control reasoning effort",
+            default=None,
+        )
+        reasoning_enabled: Optional[bool] = Field(
+            description="Set to true to enable reasoning with default parameters",
             default=None,
         )
 
@@ -59,11 +78,23 @@ class _mixin:
         kwargs = super().build_kwargs(prompt, stream)
         kwargs.pop("provider", None)
         kwargs.pop("online", None)
+        kwargs.pop("reasoning_effort", None)
+        kwargs.pop("reasoning_max_tokens", None)
+        kwargs.pop("reasoning_enabled", None)
         extra_body = {}
         if prompt.options.online:
             extra_body["plugins"] = [{"id": "web"}]
         if prompt.options.provider:
             extra_body["provider"] = prompt.options.provider
+        reasoning = {}
+        if prompt.options.reasoning_effort:
+            reasoning["effort"] = prompt.options.reasoning_effort
+        if prompt.options.reasoning_max_tokens:
+            reasoning["max_tokens"] = prompt.options.reasoning_max_tokens
+        if prompt.options.reasoning_enabled is not None:
+            reasoning["enabled"] = prompt.options.reasoning_enabled
+        if reasoning:
+            extra_body["reasoning"] = reasoning
         if extra_body:
             kwargs["extra_body"] = extra_body
         return kwargs
