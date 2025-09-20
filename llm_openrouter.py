@@ -54,10 +54,6 @@ class _mixin:
             description="Specific token limit to control reasoning effort",
             default=None,
         )
-        reasoning_exclude: Optional[bool] = Field(
-            description="Set to true to exclude reasoning tokens from response",
-            default=None,
-        )
         reasoning_enabled: Optional[bool] = Field(
             description="Set to true to enable reasoning with default parameters",
             default=None,
@@ -81,7 +77,6 @@ class _mixin:
         kwargs.pop("online", None)
         kwargs.pop("reasoning_effort", None)
         kwargs.pop("reasoning_max_tokens", None)
-        kwargs.pop("reasoning_exclude", None)
         kwargs.pop("reasoning_enabled", None)
         extra_body = {}
         if prompt.options.online:
@@ -93,8 +88,6 @@ class _mixin:
             reasoning["effort"] = prompt.options.reasoning_effort
         if prompt.options.reasoning_max_tokens:
             reasoning["max_tokens"] = prompt.options.reasoning_max_tokens
-        if prompt.options.reasoning_exclude is not None:
-            reasoning["exclude"] = prompt.options.reasoning_exclude
         if prompt.options.reasoning_enabled is not None:
             reasoning["enabled"] = prompt.options.reasoning_enabled
         if reasoning:
