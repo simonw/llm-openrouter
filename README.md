@@ -115,7 +115,7 @@ Output:
 
 ### Reasoning
 
-Some OpenRouter models such as [GPT-5](https://openrouter.ai/openai/gpt-5) include options for controlling reasoning:
+Some OpenRouter models such as [GPT-5](https://openrouter.ai/openai/gpt-5) support options for controlling reasoning:
 
 - `-o reasoning_effort low|medium|high` - control reasoning effort
 - `-o reasoning_max_tokens 2048` - an alternative way of specifying effort for some models
