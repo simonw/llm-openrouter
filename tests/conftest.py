@@ -1,12 +1,22 @@
 import pytest
 import os
+import vcr
+from models_persister import TruncatedModelsFilesystemPersister
 
 OPENROUTER_KEY = os.getenv("PYTEST_OPENROUTER_KEY", "sk-...")
 
 
+def pytest_recording_configure(config, vcr):
+    vcr.register_persister(TruncatedModelsFilesystemPersister)
+
+
 @pytest.fixture(scope="module")
 def vcr_config():
-    return {"filter_headers": ["authorization"]}
+    return {
+        "filter_headers": ["authorization"],
+        "decode_compressed_response": True,
+        "persister": TruncatedModelsFilesystemPersister,
+    }
 
 
 @pytest.fixture

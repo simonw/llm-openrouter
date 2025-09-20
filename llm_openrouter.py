@@ -16,18 +16,21 @@ def get_openrouter_models():
         path=llm.user_dir() / "openrouter_models.json",
         cache_timeout=3600,
     )["data"]
-    schema_supporting_ids = {
-        model["id"]
-        for model in fetch_cached_json(
-            url="https://openrouter.ai/api/v1/models?supported_parameters=structured_outputs",
-            path=llm.user_dir() / "openrouter_models_structured_outputs.json",
-            cache_timeout=3600,
-        )["data"]
-    }
-    # Annotate models with their schema support
-    for model in models:
-        model["supports_schema"] = model["id"] in schema_supporting_ids
     return models
+
+
+def get_supports_images(model_definition):
+    try:
+        return "image" in model_definition["architecture"]["input_modalities"]
+    except KeyError:
+        return False
+
+
+def has_parameter(model_definition, parameter):
+    try:
+        return parameter in model_definition["supported_parameters"]
+    except KeyError:
+        return False
 
 
 class ReasoningEffortEnum(str, Enum):
@@ -125,7 +128,8 @@ def register_models(register):
             model_id="openrouter/{}".format(model_definition["id"]),
             model_name=model_definition["id"],
             vision=supports_images,
-            supports_schema=model_definition["supports_schema"],
+            supports_schema=has_parameter(model_definition, "structured_outputs"),
+            supports_tools=has_parameter(model_definition, "tools"),
             api_base="https://openrouter.ai/api/v1",
             headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
         )
@@ -176,17 +180,6 @@ def fetch_cached_json(url, path, cache_timeout):
             )
 
 
-def get_supports_images(model_definition):
-    try:
-        # e.g. `text->text` or `text+image->text`
-        modality = model_definition["architecture"]["modality"]
-
-        input_modalities = modality.split("->")[0].split("+")
-        return "image" in input_modalities
-    except Exception:
-        return False
-
-
 @llm.hookimpl
 def register_commands(cli):
     @cli.group()
@@ -225,7 +218,8 @@ def register_commands(cli):
                             + ": "
                             + (value if isinstance(value, str) else json.dumps(value))
                         )
-                bits.append(f"  supports_schema: {model['supports_schema']}")
+                bits.append(f"  supports_schema: {has_parameter(model, 'structured_outputs')}")
+                bits.append(f"  supports_tools: {has_parameter(model, 'tools')}")
                 pricing = format_pricing(model["pricing"])
                 if pricing:
                     bits.append("  pricing: " + pricing)
