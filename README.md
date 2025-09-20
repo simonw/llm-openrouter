@@ -113,6 +113,36 @@ Output:
 }
 ```
 
+### Tools
+
+Most OpenRouter models support [tool calls](https://llm.datasette.io/en/stable/tools.html). You can try that out like so:
+
+```bash
+llm -m openrouter/openai/gpt-5 \
+  -T llm_version -T llm_time \
+  "What version of LLM and what time is it?" \
+  --tools-debug
+```
+Example output:
+```
+Tool call: llm_version({})
+  0.27.1
+
+
+Tool call: llm_time({})
+  {
+    "utc_time": "2025-09-20 23:35:53 UTC",
+    "utc_time_iso": "2025-09-20T23:35:53.205247+00:00",
+    "local_timezone": "PDT",
+    "local_time": "2025-09-20 16:35:53",
+    "timezone_offset": "UTC-7:00",
+    "is_dst": true
+  }
+
+LLM version: 0.27.1
+Current time: 2025-09-20 16:35:53 PDT (2025-09-20 23:35:53 UTC)
+```
+
 ### Reasoning
 
 Some OpenRouter models such as [GPT-5](https://openrouter.ai/openai/gpt-5) support options for controlling reasoning:
