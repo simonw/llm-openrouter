@@ -39,6 +39,11 @@ class ReasoningEffortEnum(str, Enum):
     high = "high"
 
 
+class WebSearchEngineEnum(str, Enum):
+    exa = "exa"
+    native = "native"
+
+
 class _mixin:
     class Options(Chat.Options):
         online: Optional[bool] = Field(
@@ -61,6 +66,10 @@ class _mixin:
             description="Set to true to enable reasoning with default parameters",
             default=None,
         )
+        web_search: Optional[WebSearchEngineEnum] = Field(
+            description='Web search engine: "exa" or "native"',
+            default=None,
+        )
 
         @field_validator("provider")
         def validate_provider(cls, provider):
@@ -81,9 +90,14 @@ class _mixin:
         kwargs.pop("reasoning_effort", None)
         kwargs.pop("reasoning_max_tokens", None)
         kwargs.pop("reasoning_enabled", None)
+        kwargs.pop("web_search", None)
         extra_body = {}
+        if prompt.options.online and prompt.options.web_search:
+            raise ValueError("Cannot use both 'online' and 'web_search' options")
         if prompt.options.online:
-            extra_body["plugins"] = [{"id": "web"}]
+            extra_body["plugins"] = [{"id": "web", "engine": "exa"}]
+        if prompt.options.web_search:
+            extra_body["plugins"] = [{"id": "web", "engine": prompt.options.web_search}]
         if prompt.options.provider:
             extra_body["provider"] = prompt.options.provider
         reasoning = {}

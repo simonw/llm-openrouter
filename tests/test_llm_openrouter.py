@@ -3,6 +3,7 @@ import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
+from unittest.mock import MagicMock
 
 TINY_PNG = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xa6\x00\x00\x01\x1a"
@@ -143,3 +144,35 @@ def test_tool_calls():
             "model": "openai/gpt-4.1-mini",
         }
     )
+
+
+def test_web_search_native():
+    model = llm.get_model("openrouter/openai/gpt-5")
+    prompt = MagicMock()
+    prompt.options = model.Options(web_search="native")
+    kwargs = model.build_kwargs(prompt, stream=False)
+    assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "native"}]
+
+
+def test_web_search_exa():
+    model = llm.get_model("openrouter/openai/gpt-5")
+    prompt = MagicMock()
+    prompt.options = model.Options(web_search="exa")
+    kwargs = model.build_kwargs(prompt, stream=False)
+    assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "exa"}]
+
+
+def test_online_uses_exa_engine():
+    model = llm.get_model("openrouter/openai/gpt-5")
+    prompt = MagicMock()
+    prompt.options = model.Options(online=True)
+    kwargs = model.build_kwargs(prompt, stream=False)
+    assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "exa"}]
+
+
+def test_online_and_web_search_conflict():
+    model = llm.get_model("openrouter/openai/gpt-5")
+    prompt = MagicMock()
+    prompt.options = model.Options(online=True, web_search="native")
+    with pytest.raises(ValueError, match="Cannot use both"):
+        model.build_kwargs(prompt, stream=False)
