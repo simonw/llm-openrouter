@@ -146,33 +146,33 @@ def test_tool_calls():
     )
 
 
-def test_web_search_native():
+def test_web_search_engine_native():
     model = llm.get_model("openrouter/openai/gpt-5")
     prompt = MagicMock()
-    prompt.options = model.Options(web_search="native")
+    prompt.options = model.Options(web_search_engine="native")
     kwargs = model.build_kwargs(prompt, stream=False)
     assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "native"}]
 
 
-def test_web_search_exa():
+def test_web_search_engine_exa():
     model = llm.get_model("openrouter/openai/gpt-5")
     prompt = MagicMock()
-    prompt.options = model.Options(web_search="exa")
+    prompt.options = model.Options(web_search_engine="exa")
     kwargs = model.build_kwargs(prompt, stream=False)
     assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "exa"}]
 
 
-def test_online_uses_exa_engine():
+def test_online():
     model = llm.get_model("openrouter/openai/gpt-5")
     prompt = MagicMock()
     prompt.options = model.Options(online=True)
     kwargs = model.build_kwargs(prompt, stream=False)
-    assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "exa"}]
+    assert kwargs["extra_body"]["plugins"] == [{"id": "web"}]
 
 
-def test_online_and_web_search_conflict():
+def test_online_and_web_search_engine_together():
     model = llm.get_model("openrouter/openai/gpt-5")
     prompt = MagicMock()
-    prompt.options = model.Options(online=True, web_search="native")
-    with pytest.raises(ValueError, match="Cannot use both"):
-        model.build_kwargs(prompt, stream=False)
+    prompt.options = model.Options(online=True, web_search_engine="native")
+    kwargs = model.build_kwargs(prompt, stream=False)
+    assert kwargs["extra_body"]["plugins"] == [{"id": "web", "engine": "native"}]
