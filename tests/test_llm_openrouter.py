@@ -4,6 +4,22 @@ from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
 
+from llm_openrouter import DEFAULT_API_BASE, get_api_base
+
+
+def test_get_api_base_default(monkeypatch):
+    """Test that get_api_base returns default when env var is not set."""
+    monkeypatch.delenv("OPENROUTER_BASE_URL", raising=False)
+    assert get_api_base() == DEFAULT_API_BASE
+
+
+def test_get_api_base_custom(monkeypatch):
+    """Test that get_api_base respects OPENROUTER_BASE_URL env var."""
+    custom_url = "https://my-proxy.example.com/v1"
+    monkeypatch.setenv("OPENROUTER_BASE_URL", custom_url)
+    assert get_api_base() == custom_url
+
+
 TINY_PNG = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xa6\x00\x00\x01\x1a"
     b"\x02\x03\x00\x00\x00\xe6\x99\xc4^\x00\x00\x00\tPLTE\xff\xff\xff"

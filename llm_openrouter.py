@@ -2,6 +2,7 @@ import click
 from enum import Enum
 import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
+import os
 from pathlib import Path
 from pydantic import Field, field_validator
 from typing import Optional, Union
@@ -10,9 +11,18 @@ import time
 import httpx
 
 
+DEFAULT_API_BASE = "https://openrouter.ai/api/v1"
+
+
+def get_api_base():
+    """Get the API base URL from environment or use the default."""
+    return os.environ.get("OPENROUTER_BASE_URL", DEFAULT_API_BASE)
+
+
 def get_openrouter_models():
+    api_base = get_api_base()
     models = fetch_cached_json(
-        url="https://openrouter.ai/api/v1/models",
+        url=f"{api_base}/models",
         path=llm.user_dir() / "openrouter_models.json",
         cache_timeout=3600,
     )["data"]
@@ -122,6 +132,7 @@ def register_models(register):
     key = llm.get_key("", "openrouter", "OPENROUTER_KEY")
     if not key:
         return
+    api_base = get_api_base()
     for model_definition in get_openrouter_models():
         supports_images = get_supports_images(model_definition)
         kwargs = dict(
@@ -130,7 +141,7 @@ def register_models(register):
             vision=supports_images,
             supports_schema=has_parameter(model_definition, "structured_outputs"),
             supports_tools=has_parameter(model_definition, "tools"),
-            api_base="https://openrouter.ai/api/v1",
+            api_base=api_base,
             headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
         )
         register(
@@ -230,8 +241,9 @@ def register_commands(cli):
     def key(key):
         "View information and rate limits for the current key"
         key = llm.get_key(key, "openrouter", "OPENROUTER_KEY")
+        api_base = get_api_base()
         response = httpx.get(
-            "https://openrouter.ai/api/v1/auth/key",
+            f"{api_base}/auth/key",
             headers={"Authorization": f"Bearer {key}"},
         )
         response.raise_for_status()
