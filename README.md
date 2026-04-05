@@ -277,24 +277,19 @@ llm openrouter key --key sk-xxx
 
 ## Development
 
-To set up this plugin locally, first checkout the code. Then create a new virtual environment:
+To set up this plugin locally, first checkout the code. Then run the tests with `uv`:
 ```bash
 cd llm-openrouter
-python3 -m venv venv
-source venv/bin/activate
+uv run pytest
 ```
-Now install the dependencies and test dependencies:
+To run LLM with the plugin available:
 ```bash
-llm install -e '.[test]'
-```
-To run the tests:
-```bash
-pytest
+uv run llm models
 ```
 To update recordings and snapshots, run:
 ```bash
 PYTEST_OPENROUTER_KEY="$(llm keys get openrouter)" \
-  pytest --record-mode=rewrite --inline-snapshot=fix
+  uv run pytest --record-mode=rewrite --inline-snapshot=fix
 ```
 
 If tests against additional models are added, update `tests/models_persister.py` to preserve those model ids in the recordings.

@@ -4,10 +4,9 @@ version = "0.5"
 description = "LLM plugin for models hosted by OpenRouter"
 readme = "README.md"
 authors = [{name = "Simon Willison"}]
-license = {text = "Apache-2.0"}
-classifiers = [
-    "License :: OSI Approved :: Apache Software License"
-]
+license = "Apache-2.0"
+requires-python = ">=3.10"
+classifiers = []
 dependencies = [
     "llm>=0.27.1",
     "httpx",
@@ -23,5 +22,9 @@ CI = "https://github.com/simonw/llm-openrouter/actions"
 [project.entry-points.llm]
 openrouter = "llm_openrouter"
 
-[project.optional-dependencies]
-test = ["pytest", "pytest-recording", "inline-snapshot"]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = ["pytest", "pytest-recording", "inline-snapshot"]
