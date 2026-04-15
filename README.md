@@ -173,7 +173,7 @@ This specifies that you would like only providers that [support fp8 quantization
 
 ### Incorporating search results from Exa
 
-OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.
+OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/), the fastest and most accurate web search API for AI, where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.
 
 Enable this feature using the `-o online 1` option:
 
