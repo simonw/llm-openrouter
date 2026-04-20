@@ -42,6 +42,11 @@ OpenRouter: openrouter/anthropic/claude-sonnet-4
 OpenRouter: openrouter/meta-llama/llama-2-70b-chat
 ...
 ```
+The list of models from OpenRouter is cached for an hour. You can force a refresh using this command:
+```bash
+llm openrouter refresh
+```
+
 To run a prompt against a model, pass its full model ID to the `-m` option, like this:
 ```bash
 llm -m openrouter/anthropic/claude-sonnet-4 "Five spooky names for a pet tarantula"

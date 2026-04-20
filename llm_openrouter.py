@@ -10,13 +10,17 @@ import time
 import httpx
 
 
-def get_openrouter_models():
+def get_openrouter_models(skip_cache=False):
     models = fetch_cached_json(
         url="https://openrouter.ai/api/v1/models",
         path=llm.user_dir() / "openrouter_models.json",
-        cache_timeout=3600,
+        cache_timeout=0 if skip_cache else 3600,
     )["data"]
     return models
+
+
+def get_model_ids(skip_cache=False):
+    return [model["id"] for model in get_openrouter_models(skip_cache=skip_cache)]
 
 
 def get_supports_images(model_definition):
@@ -218,12 +222,34 @@ def register_commands(cli):
                             + ": "
                             + (value if isinstance(value, str) else json.dumps(value))
                         )
-                bits.append(f"  supports_schema: {has_parameter(model, 'structured_outputs')}")
+                bits.append(
+                    f"  supports_schema: {has_parameter(model, 'structured_outputs')}"
+                )
                 bits.append(f"  supports_tools: {has_parameter(model, 'tools')}")
                 pricing = format_pricing(model["pricing"])
                 if pricing:
                     bits.append("  pricing: " + pricing)
                 click.echo("\n".join(bits) + "\n")
+
+    @openrouter.command()
+    def refresh():
+        "Refresh the list of available OpenRouter models"
+        before = set(get_model_ids())
+        after = set(get_model_ids(skip_cache=True))
+        added = after - before
+        removed = before - after
+        if added:
+            click.echo(
+                f"Added models: {', '.join('openrouter/' + m for m in added)}",
+                err=True,
+            )
+        if removed:
+            click.echo(
+                f"Removed models: {', '.join('openrouter/' + m for m in removed)}",
+                err=True,
+            )
+        else:
+            click.echo("No changes", err=True)
 
     @openrouter.command()
     @click.option("--key", help="Key to inspect")
