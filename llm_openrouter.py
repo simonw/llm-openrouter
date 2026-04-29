@@ -173,6 +173,10 @@ def fetch_cached_json(url, path, cache_timeout):
 
         return response.json()
     except httpx.HTTPError:
+        if cache_timeout == 0:
+            raise DownloadError(
+                f"Failed to download data when cache refresh was requested."
+            )
         # If there's an existing file, load it
         if path.is_file():
             with open(path, "r") as file:
