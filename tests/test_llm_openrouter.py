@@ -5,7 +5,7 @@ import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
-from llm_openrouter import OpenRouterAsyncResponses, OpenRouterResponses
+from llm_openrouter import OpenRouterAsyncResponses, OpenRouterResponses, WebSearch
 
 TINY_PNG = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xa6\x00\x00\x01\x1a"
@@ -234,7 +234,6 @@ def test_responses_kwargs(model_class):
     response = model.prompt(
         "hello",
         options={
-            "online": True,
             "provider": '{"order": ["OpenAI"]}',
             "reasoning_effort": "high",
             "reasoning_max_tokens": 512,
@@ -252,13 +251,39 @@ def test_responses_kwargs(model_class):
             "max_tokens": 512,
             "enabled": True,
         },
-        "tools": [{"type": "openrouter:web_search"}],
         "extra_body": {
             "frequency_penalty": 0.25,
             "presence_penalty": 0.5,
             "provider": {"order": ["OpenAI"]},
         },
     }
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_web_search_server_tool(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    tool = WebSearch(engine="exa", max_results=2, allowed_domains=["example.com"])
+    response = model.prompt("search", tools=[tool])
+
+    kwargs = model._build_responses_kwargs(response.prompt, stream=True)
+
+    assert kwargs["tools"] == [
+        {
+            "type": "openrouter:web_search",
+            "parameters": {
+                "engine": "exa",
+                "max_results": 2,
+                "allowed_domains": ["example.com"],
+            },
+        }
+    ]
+    assert WebSearch in model.supported_server_side_tools
 
 
 @pytest.mark.parametrize(

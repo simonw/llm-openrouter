@@ -1,7 +1,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 import click
 import httpx
@@ -13,6 +13,7 @@ from llm.default_plugins.openai_models import (
     ReasoningEffortEnum,
     Responses,
 )
+from llm.parts import StreamEvent
 from pydantic import Field, field_validator
 
 
@@ -45,10 +46,6 @@ def has_parameter(model_definition, parameter):
 
 def build_openrouter_options(base_options):
     class Options(base_options):
-        online: Optional[bool] = Field(
-            description="Allow the model to search the web using OpenRouter",
-            default=None,
-        )
         provider: Optional[Union[dict, str]] = Field(
             description=("JSON object to control provider routing"),
             default=None,
@@ -84,6 +81,117 @@ def build_openrouter_options(base_options):
     return Options
 
 
+class WebSearch(llm.ServerSideTool):
+    """Search the web using OpenRouter's hosted web search tool."""
+
+    name = "web_search"
+    _engines = frozenset(
+        {"auto", "native", "exa", "firecrawl", "parallel", "perplexity"}
+    )
+    _search_context_sizes = frozenset({"low", "medium", "high"})
+
+    def __init__(
+        self,
+        engine: Literal[
+            "auto", "native", "exa", "firecrawl", "parallel", "perplexity"
+        ]
+        | None = None,
+        max_results: int | None = None,
+        max_uses: int | None = None,
+        max_total_results: int | None = None,
+        search_context_size: Literal["low", "medium", "high"] | None = None,
+        max_characters: int | None = None,
+        user_location: dict | None = None,
+        allowed_domains: list[str] | None = None,
+        excluded_domains: list[str] | None = None,
+    ):
+        super().__init__()
+        if engine is not None and engine not in self._engines:
+            raise ValueError(
+                "engine must be one of: auto, native, exa, firecrawl, parallel "
+                "or perplexity"
+            )
+        if search_context_size is not None and (
+            search_context_size not in self._search_context_sizes
+        ):
+            raise ValueError("search_context_size must be one of: low, medium or high")
+        self._validate_integer("max_results", max_results, minimum=1, maximum=25)
+        self._validate_integer("max_uses", max_uses, minimum=1)
+        self._validate_integer("max_total_results", max_total_results, minimum=1)
+        self._validate_integer(
+            "max_characters", max_characters, minimum=1, maximum=100_000
+        )
+        if user_location is not None and not isinstance(user_location, dict):
+            raise TypeError("user_location must be a dictionary")
+        self.engine = engine
+        self.max_results = max_results
+        self.max_uses = max_uses
+        self.max_total_results = max_total_results
+        self.search_context_size = search_context_size
+        self.max_characters = max_characters
+        self.user_location = dict(user_location) if user_location is not None else None
+        self.allowed_domains = self._validate_domains(
+            "allowed_domains", allowed_domains
+        )
+        self.excluded_domains = self._validate_domains(
+            "excluded_domains", excluded_domains
+        )
+
+    @staticmethod
+    def _validate_integer(name, value, minimum, maximum=None):
+        if value is None:
+            return
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise TypeError(f"{name} must be an integer")
+        if value < minimum or (maximum is not None and value > maximum):
+            if maximum is None:
+                raise ValueError(f"{name} must be at least {minimum}")
+            raise ValueError(f"{name} must be between {minimum} and {maximum}")
+
+    @staticmethod
+    def _validate_domains(name, domains):
+        if domains is None:
+            return None
+        if not isinstance(domains, list):
+            raise TypeError(f"{name} must be a list")
+        if any(not isinstance(domain, str) or not domain for domain in domains):
+            raise TypeError(f"{name} entries must be non-empty strings")
+        return list(domains)
+
+    def tool_spec(self, model):
+        parameters = {}
+        for key in (
+            "engine",
+            "max_results",
+            "max_uses",
+            "max_total_results",
+            "search_context_size",
+            "max_characters",
+            "user_location",
+            "allowed_domains",
+            "excluded_domains",
+        ):
+            value = getattr(self, key)
+            if value is not None:
+                parameters[key] = value
+        spec = {"type": "openrouter:web_search"}
+        if parameters:
+            spec["parameters"] = parameters
+        return spec
+
+
+def _response_item_dict(item):
+    if hasattr(item, "model_dump"):
+        return item.model_dump(mode="json", exclude_none=True)
+    if isinstance(item, dict):
+        return dict(item)
+    return {
+        key: value
+        for key, value in vars(item).items()
+        if value is not None and not key.startswith("_")
+    }
+
+
 class _mixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -92,13 +200,10 @@ class _mixin:
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
         kwargs.pop("provider", None)
-        kwargs.pop("online", None)
         kwargs.pop("reasoning_effort", None)
         kwargs.pop("reasoning_max_tokens", None)
         kwargs.pop("reasoning_enabled", None)
         extra_body = {}
-        if prompt.options.online:
-            extra_body["plugins"] = [{"id": "web"}]
         if prompt.options.provider:
             extra_body["provider"] = prompt.options.provider
         reasoning = {}
@@ -118,12 +223,10 @@ class _mixin:
         reasoning_effort = prompt.options.reasoning_effort
         reasoning_max_tokens = prompt.options.reasoning_max_tokens
         reasoning_enabled = prompt.options.reasoning_enabled
-        online = prompt.options.online
         provider = prompt.options.provider
 
         kwargs = super()._build_responses_kwargs(prompt, stream)
         for key in (
-            "online",
             "provider",
             "reasoning_max_tokens",
             "reasoning_enabled",
@@ -152,9 +255,6 @@ class _mixin:
         if reasoning:
             kwargs["reasoning"] = reasoning
 
-        if online:
-            kwargs.setdefault("tools", []).append({"type": "openrouter:web_search"})
-
         extra_body = dict(kwargs.pop("extra_body", {}) or {})
         for key in ("frequency_penalty", "presence_penalty"):
             value = kwargs.pop(key, None)
@@ -165,6 +265,42 @@ class _mixin:
         if extra_body:
             kwargs["extra_body"] = extra_body
         return kwargs
+
+    def _server_tool_events(self, item, message_index):
+        events = super()._server_tool_events(item, message_index)
+        if events or getattr(item, "type", None) != "openrouter:web_search":
+            return events
+
+        response_item = _response_item_dict(item)
+        item_id = response_item.get("id")
+        action = response_item.get("action") or {}
+        return [
+            StreamEvent(
+                type="tool_call_name",
+                chunk="web_search",
+                tool_call_id=item_id,
+                server_executed=True,
+                provider_metadata={
+                    "openrouter": {"response_item": response_item}
+                },
+                message_index=message_index,
+            ),
+            StreamEvent(
+                type="tool_call_args",
+                chunk=json.dumps(action),
+                tool_call_id=item_id,
+                server_executed=True,
+                message_index=message_index,
+            ),
+            StreamEvent(
+                type="tool_result",
+                chunk=response_item.get("status") or "completed",
+                tool_call_id=item_id,
+                server_executed=True,
+                tool_name="web_search",
+                message_index=message_index,
+            ),
+        ]
 
 
 class OpenRouterChat(_mixin, Chat):
@@ -189,7 +325,7 @@ class OpenRouterResponses(_mixin, Responses):
 
     @property
     def supported_server_side_tools(self):
-        return (llm.ServerSideTool,)
+        return (WebSearch, llm.ServerSideTool)
 
     def execute(self, prompt, stream, response, conversation=None, key=None):
         if getattr(prompt.options, "chat_completions", None):
@@ -212,7 +348,7 @@ class OpenRouterAsyncResponses(_mixin, AsyncResponses):
 
     @property
     def supported_server_side_tools(self):
-        return (llm.ServerSideTool,)
+        return (WebSearch, llm.ServerSideTool)
 
     async def execute(self, prompt, stream, response, conversation=None, key=None):
         if getattr(prompt.options, "chat_completions", None):

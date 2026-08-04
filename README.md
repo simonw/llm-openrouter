@@ -185,13 +185,20 @@ This specifies that you would like only providers that [support fp8 quantization
 OpenRouter can give supported models access to web search using its
 [`openrouter:web_search` server tool](https://openrouter.ai/docs/guides/features/server-tools/web-search).
 
-Enable it using the `-o online 1` option:
+Configure it as an LLM server-side tool using `-T`:
 
 ```bash
-llm -m openrouter/mistralai/mistral-small -o online 1 'key events on march 1st 2025'
+llm -m openrouter/openai/gpt-5.2 \
+  -T 'WebSearch(max_results=3)' \
+  'key events on march 1st 2025'
 ```
-The model decides when and whether to search. Consult the OpenRouter
-documentation for current configuration options and pricing.
+The `WebSearch` tool also accepts OpenRouter's `engine`, `max_uses`,
+`max_total_results`, `search_context_size`, `max_characters`, `user_location`,
+`allowed_domains` and `excluded_domains` options. The model decides when and
+whether to search.
+
+Consult the OpenRouter documentation for current configuration options and
+pricing.
 
 ### Listing models
 
