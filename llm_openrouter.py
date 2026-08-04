@@ -1,13 +1,19 @@
-import click
-from enum import Enum
-import llm
-from llm.default_plugins.openai_models import Chat, AsyncChat
-from pathlib import Path
-from pydantic import Field, field_validator
-from typing import Optional, Union
 import json
 import time
+from pathlib import Path
+from typing import Optional, Union
+
+import click
 import httpx
+import llm
+from llm.default_plugins.openai_models import (
+    AsyncChat,
+    AsyncResponses,
+    Chat,
+    ReasoningEffortEnum,
+    Responses,
+)
+from pydantic import Field, field_validator
 
 
 def get_openrouter_models(skip_cache=False):
@@ -37,16 +43,10 @@ def has_parameter(model_definition, parameter):
         return False
 
 
-class ReasoningEffortEnum(str, Enum):
-    low = "low"
-    medium = "medium"
-    high = "high"
-
-
-class _mixin:
-    class Options(Chat.Options):
+def build_openrouter_options(base_options):
+    class Options(base_options):
         online: Optional[bool] = Field(
-            description="Use relevant search results from Exa",
+            description="Allow the model to search the web using OpenRouter",
             default=None,
         )
         provider: Optional[Union[dict, str]] = Field(
@@ -54,7 +54,10 @@ class _mixin:
             default=None,
         )
         reasoning_effort: Optional[ReasoningEffortEnum] = Field(
-            description='One of "high", "medium", or "low" to control reasoning effort',
+            description=(
+                'One of "none", "minimal", "low", "medium", "high", "xhigh", '
+                'or "max" to control reasoning effort'
+            ),
             default=None,
         )
         reasoning_max_tokens: Optional[int] = Field(
@@ -77,6 +80,14 @@ class _mixin:
                 except json.JSONDecodeError:
                     raise ValueError("Invalid JSON in provider string")
             return provider
+
+    return Options
+
+
+class _mixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Options = build_openrouter_options(self.Options)
 
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
@@ -103,6 +114,58 @@ class _mixin:
             kwargs["extra_body"] = extra_body
         return kwargs
 
+    def _build_responses_kwargs(self, prompt, stream):
+        reasoning_effort = prompt.options.reasoning_effort
+        reasoning_max_tokens = prompt.options.reasoning_max_tokens
+        reasoning_enabled = prompt.options.reasoning_enabled
+        online = prompt.options.online
+        provider = prompt.options.provider
+
+        kwargs = super()._build_responses_kwargs(prompt, stream)
+        for key in (
+            "online",
+            "provider",
+            "reasoning_max_tokens",
+            "reasoning_enabled",
+        ):
+            kwargs.pop(key, None)
+
+        unsupported = [
+            key
+            for key in ("stop", "logit_bias", "seed")
+            if kwargs.pop(key, None) is not None
+        ]
+        if unsupported:
+            raise ValueError(
+                "The OpenRouter Responses API does not support these options: {}".format(
+                    ", ".join(unsupported)
+                )
+            )
+
+        reasoning = dict(kwargs.get("reasoning") or {})
+        if reasoning_effort:
+            reasoning["effort"] = reasoning_effort
+        if reasoning_max_tokens is not None:
+            reasoning["max_tokens"] = reasoning_max_tokens
+        if reasoning_enabled is not None:
+            reasoning["enabled"] = reasoning_enabled
+        if reasoning:
+            kwargs["reasoning"] = reasoning
+
+        if online:
+            kwargs.setdefault("tools", []).append({"type": "openrouter:web_search"})
+
+        extra_body = dict(kwargs.pop("extra_body", {}) or {})
+        for key in ("frequency_penalty", "presence_penalty"):
+            value = kwargs.pop(key, None)
+            if value is not None:
+                extra_body[key] = value
+        if provider:
+            extra_body["provider"] = provider
+        if extra_body:
+            kwargs["extra_body"] = extra_body
+        return kwargs
+
 
 class OpenRouterChat(_mixin, Chat):
     needs_key = "openrouter"
@@ -120,6 +183,58 @@ class OpenRouterAsyncChat(_mixin, AsyncChat):
         return "OpenRouter: {}".format(self.model_id)
 
 
+class OpenRouterResponses(_mixin, Responses):
+    needs_key = "openrouter"
+    key_env_var = "OPENROUTER_KEY"
+
+    @property
+    def supported_server_side_tools(self):
+        return (llm.ServerSideTool,)
+
+    def execute(self, prompt, stream, response, conversation=None, key=None):
+        if getattr(prompt.options, "chat_completions", None):
+            if any(isinstance(tool, llm.ServerSideTool) for tool in prompt.tools):
+                raise ValueError(
+                    "Server-side tools cannot be used with chat_completions"
+                )
+            chat = OpenRouterChat(**self._delegate_chat_kwargs())
+            yield from chat.execute(prompt, stream, response, conversation, key)
+            return
+        yield from super().execute(prompt, stream, response, conversation, key)
+
+    def __str__(self):
+        return "OpenRouter: {}".format(self.model_id)
+
+
+class OpenRouterAsyncResponses(_mixin, AsyncResponses):
+    needs_key = "openrouter"
+    key_env_var = "OPENROUTER_KEY"
+
+    @property
+    def supported_server_side_tools(self):
+        return (llm.ServerSideTool,)
+
+    async def execute(self, prompt, stream, response, conversation=None, key=None):
+        if getattr(prompt.options, "chat_completions", None):
+            if any(isinstance(tool, llm.ServerSideTool) for tool in prompt.tools):
+                raise ValueError(
+                    "Server-side tools cannot be used with chat_completions"
+                )
+            chat = OpenRouterAsyncChat(**self._delegate_chat_kwargs())
+            async for event in chat.execute(
+                prompt, stream, response, conversation, key
+            ):
+                yield event
+            return
+        async for event in super().execute(
+            prompt, stream, response, conversation, key
+        ):
+            yield event
+
+    def __str__(self):
+        return "OpenRouter: {}".format(self.model_id)
+
+
 @llm.hookimpl
 def register_models(register):
     # Only do this if the openrouter key is set
@@ -132,14 +247,19 @@ def register_models(register):
             model_id="openrouter/{}".format(model_definition["id"]),
             model_name=model_definition["id"],
             vision=supports_images,
+            reasoning=has_parameter(model_definition, "reasoning"),
+            verbosity=has_parameter(model_definition, "verbosity"),
             supports_schema=has_parameter(model_definition, "structured_outputs"),
             supports_tools=has_parameter(model_definition, "tools"),
             api_base="https://openrouter.ai/api/v1",
-            headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
+            headers={
+                "HTTP-Referer": "https://llm.datasette.io/",
+                "X-OpenRouter-Title": "LLM",
+            },
         )
         register(
-            OpenRouterChat(**kwargs),
-            OpenRouterAsyncChat(**kwargs),
+            OpenRouterResponses(**kwargs),
+            OpenRouterAsyncResponses(**kwargs),
         )
 
 

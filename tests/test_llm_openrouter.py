@@ -1,8 +1,11 @@
+from copy import deepcopy
+
 import llm
 import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
+from llm_openrouter import OpenRouterAsyncResponses, OpenRouterResponses
 
 TINY_PNG = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xa6\x00\x00\x01\x1a"
@@ -15,30 +18,56 @@ TINY_PNG = (
 )
 
 
+def response_snapshot(response):
+    output = deepcopy(response.response_json["output"])
+    for item in output:
+        item.pop("id", None)
+        if "call_id" in item:
+            item["call_id"] = "<call_id>"
+    usage = deepcopy(response.response_json["usage"])
+    usage.pop("cost", None)
+    usage.pop("cost_details", None)
+    return {
+        "object": response.response_json["object"],
+        "model": response.response_json["model"],
+        "output": output,
+        "usage": usage,
+    }
+
+
 @pytest.mark.vcr
 def test_prompt():
     model = llm.get_model("openrouter/openai/gpt-4o")
+    assert isinstance(model, OpenRouterResponses)
     response = model.prompt("Two names for a pet pelican, be brief")
-    assert str(response) == snapshot("Pebbles and Skipper.")
-    response_dict = dict(response.response_json)
-    response_dict.pop("id")  # differs between requests
-    assert response_dict == snapshot(
+    assert str(response) == snapshot("Skipper or Sundance")
+    assert response_snapshot(response) == snapshot(
         {
-            "content": "Pebbles and Skipper.",
-            "role": "assistant",
-            "finish_reason": "stop",
+            "object": "response",
+            "model": "openai/gpt-4o",
+            "output": [
+                {
+                    "content": [
+                        {
+                            "annotations": [],
+                            "text": "Skipper or Sundance",
+                            "type": "output_text",
+                            "logprobs": [],
+                        }
+                    ],
+                    "role": "assistant",
+                    "status": "completed",
+                    "type": "message",
+                }
+            ],
             "usage": {
-                "completion_tokens": 6,
-                "prompt_tokens": 17,
-                "total_tokens": 23,
-                "completion_tokens_details": {"reasoning_tokens": 0},
-                "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 0.0001025,
+                "input_tokens": 17,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": 4,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 21,
                 "is_byok": False,
             },
-            "object": "chat.completion.chunk",
-            "model": "openai/gpt-4o",
-            "created": 1754441342,
         }
     )
 
@@ -58,33 +87,68 @@ def test_llm_models():
 
 @pytest.mark.vcr
 def test_image_prompt():
-    model = llm.get_model("openrouter/anthropic/claude-3.5-sonnet")
+    model = llm.get_model("openrouter/openai/gpt-4.1-mini")
     response = model.prompt(
         "Describe image in three words",
         attachments=[llm.Attachment(content=TINY_PNG)],
     )
-    assert str(response) == snapshot("Red green geometric shapes")
-    response_dict = response.response_json
-    response_dict.pop("id")  # differs between requests
-    assert response_dict == snapshot(
+    assert str(response) == snapshot("Red green blocks")
+    assert response_snapshot(response) == snapshot(
         {
-            "content": "Red green geometric shapes",
-            "role": "assistant",
-            "finish_reason": "stop",
+            "object": "response",
+            "model": "openai/gpt-4.1-mini",
+            "output": [
+                {
+                    "content": [
+                        {
+                            "annotations": [],
+                            "text": "Red green blocks",
+                            "type": "output_text",
+                            "logprobs": [],
+                        }
+                    ],
+                    "role": "assistant",
+                    "status": "completed",
+                    "type": "message",
+                }
+            ],
             "usage": {
-                "completion_tokens": 7,
-                "prompt_tokens": 82,
-                "total_tokens": 89,
-                "completion_tokens_details": {"reasoning_tokens": 0},
-                "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 0.000351,
+                "input_tokens": 101,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": 4,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 105,
                 "is_byok": False,
             },
-            "object": "chat.completion.chunk",
-            "model": "anthropic/claude-3.5-sonnet",
-            "created": 1754441344,
         }
     )
+
+
+@pytest.mark.vcr
+def test_reasoning():
+    model = llm.get_model("openrouter/openai/gpt-5-nano")
+    response = model.prompt(
+        "What is 2 + 2? Reply with the number only.",
+        options={"reasoning_effort": "minimal", "max_tokens": 128},
+    )
+
+    assert response.text().strip() == "4"
+    assert {event.type for event in response.stream_events()} == {
+        "reasoning",
+        "text",
+    }
+    assert {
+        type(part).__name__
+        for message in response.messages()
+        for part in message.parts
+    } == {"ReasoningPart", "TextPart"}
+    reasoning_items = [
+        item
+        for item in response.response_json["output"]
+        if item["type"] == "reasoning"
+    ]
+    assert len(reasoning_items) == 1
+    assert reasoning_items[0]["encrypted_content"]
 
 
 @pytest.mark.vcr
@@ -102,44 +166,111 @@ def test_tool_calls():
 
     responses = list(chain.responses())
 
-    responses[0].response_json.pop("id")  # differs between requests
-    responses[0].response_json.pop("created")  # differs between requests
-    assert responses[0].response_json == snapshot(
+    assert response_snapshot(responses[0]) == snapshot(
         {
-            "content": "",
-            "role": "assistant",
-            "finish_reason": "tool_calls",
+            "object": "response",
+            "model": "openai/gpt-4.1-mini",
+            "output": [
+                {
+                    "arguments": "{}",
+                    "call_id": "<call_id>",
+                    "name": "llm_version",
+                    "status": "completed",
+                    "type": "function_call",
+                }
+            ],
             "usage": {
-                "completion_tokens": 11,
-                "prompt_tokens": 48,
-                "total_tokens": 59,
-                "completion_tokens_details": {"reasoning_tokens": 0},
-                "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 3.68e-05,
+                "input_tokens": 42,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": 12,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 54,
                 "is_byok": False,
             },
-            "object": "chat.completion.chunk",
-            "model": "openai/gpt-4.1-mini",
         }
     )
 
-    responses[1].response_json.pop("id")  # differs between requests
-    responses[1].response_json.pop("created")  # differs between requests
-    assert responses[1].response_json == snapshot(
+    assert response_snapshot(responses[1]) == snapshot(
         {
-            "content": "The current LLM version is 0.0+test.",
-            "role": "assistant",
-            "finish_reason": "stop",
+            "object": "response",
+            "model": "openai/gpt-4.1-mini",
+            "output": [
+                {
+                    "content": [
+                        {
+                            "annotations": [],
+                            "text": "The current LLM version is 0.0+test.",
+                            "type": "output_text",
+                            "logprobs": [],
+                        }
+                    ],
+                    "role": "assistant",
+                    "status": "completed",
+                    "type": "message",
+                }
+            ],
             "usage": {
-                "completion_tokens": 14,
-                "prompt_tokens": 73,
-                "total_tokens": 87,
-                "completion_tokens_details": {"reasoning_tokens": 0},
-                "prompt_tokens_details": {"cached_tokens": 0},
-                "cost": 5.16e-05,
+                "input_tokens": 65,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": 15,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 80,
                 "is_byok": False,
             },
-            "object": "chat.completion.chunk",
-            "model": "openai/gpt-4.1-mini",
         }
     )
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_responses_kwargs(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+        reasoning=True,
+    )
+    response = model.prompt(
+        "hello",
+        options={
+            "online": True,
+            "provider": '{"order": ["OpenAI"]}',
+            "reasoning_effort": "high",
+            "reasoning_max_tokens": 512,
+            "reasoning_enabled": True,
+            "frequency_penalty": 0.25,
+            "presence_penalty": 0.5,
+        },
+    )
+    kwargs = model._build_responses_kwargs(response.prompt, stream=True)
+
+    assert kwargs == {
+        "reasoning": {
+            "summary": "auto",
+            "effort": "high",
+            "max_tokens": 512,
+            "enabled": True,
+        },
+        "tools": [{"type": "openrouter:web_search"}],
+        "extra_body": {
+            "frequency_penalty": 0.25,
+            "presence_penalty": 0.5,
+            "provider": {"order": ["OpenAI"]},
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    ("option", "value"),
+    (("stop", "END"), ("logit_bias", {"1": 1}), ("seed", 1)),
+)
+def test_unsupported_responses_options(option, value):
+    model = OpenRouterResponses(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    response = model.prompt("hello", options={option: value})
+    with pytest.raises(ValueError, match=option):
+        model._build_responses_kwargs(response.prompt, stream=True)

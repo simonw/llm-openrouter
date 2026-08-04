@@ -6,7 +6,7 @@ TEST_MODEL_IDS = {
     "openai/gpt-3.5-turbo",
     "openai/gpt-4.1-mini",
     "openai/gpt-4o",
-    "anthropic/claude-3.5-sonnet",
+    "openai/gpt-5-nano",
     "anthropic/claude-sonnet-4",
 }
 

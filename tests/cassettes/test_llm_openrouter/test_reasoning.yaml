@@ -1,0 +1,268 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Host:
+      - openrouter.ai
+      User-Agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://openrouter.ai/api/v1/models
+  response:
+    body:
+      string: '{"data": [{"id": "openai/gpt-5-nano", "canonical_slug": "openai/gpt-5-nano-2025-08-07",
+        "hugging_face_id": "", "name": "OpenAI: GPT-5 Nano", "created": 1754587402,
+        "description": "GPT-5-Nano is the smallest and fastest variant in the GPT-5
+        system, optimized for developer tools, rapid interactions, and ultra-low latency
+        environments. While limited in reasoning depth compared to its larger...",
+        "context_length": 400000, "architecture": {"modality": "text+image+file->text",
+        "input_modalities": ["text", "image", "file"], "output_modalities": ["text"],
+        "tokenizer": "GPT", "instruct_type": null}, "pricing": {"prompt": "0.00000005",
+        "completion": "0.0000004", "web_search": "0.01", "input_cache_read": "0.000000005"},
+        "top_provider": {"context_length": 400000, "max_completion_tokens": 128000,
+        "is_moderated": true}, "per_request_limits": null, "supported_parameters":
+        ["include_reasoning", "max_completion_tokens", "max_tokens", "reasoning",
+        "reasoning_effort", "response_format", "seed", "structured_outputs", "tool_choice",
+        "tools"], "default_parameters": {"temperature": null, "top_p": null, "top_k":
+        null, "frequency_penalty": null, "presence_penalty": null, "repetition_penalty":
+        null}, "supported_voices": null, "knowledge_cutoff": "2024-05-31", "expiration_date":
+        null, "links": {"details": "/api/v1/models/openai/gpt-5-nano-2025-08-07/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        1020, "win_rate": 36.1, "rank": 95}, {"arena": "models", "category": "codecategories",
+        "elo": 1114, "win_rate": 48.1, "rank": 82}, {"arena": "models", "category":
+        "dataviz", "elo": 1090, "win_rate": 47.2, "rank": 85}, {"arena": "models",
+        "category": "gamedev", "elo": 1100, "win_rate": 46.6, "rank": 82}, {"arena":
+        "models", "category": "uicomponent", "elo": 1103, "win_rate": 51.9, "rank":
+        79}, {"arena": "models", "category": "website", "elo": 1125, "win_rate": 48.9,
+        "rank": 84}]}, "reasoning": {"mandatory": true, "supported_efforts": ["high",
+        "medium", "low", "minimal"], "default_effort": "medium"}}, {"id": "anthropic/claude-sonnet-4",
+        "canonical_slug": "anthropic/claude-4-sonnet-20250522", "hugging_face_id":
+        "", "name": "Anthropic: Claude Sonnet 4", "created": 1747930371, "description":
+        "Claude Sonnet 4 significantly enhances the capabilities of its predecessor,
+        Sonnet 3.7, excelling in both coding and reasoning tasks with improved precision
+        and controllability. Achieving state-of-the-art performance on SWE-bench (72.7%),...",
+        "context_length": 1000000, "architecture": {"modality": "text+image+file->text",
+        "input_modalities": ["image", "text", "file"], "output_modalities": ["text"],
+        "tokenizer": "Claude", "instruct_type": null}, "pricing": {"prompt": "0.000003",
+        "completion": "0.000015", "web_search": "0.01", "input_cache_read": "0.0000003",
+        "input_cache_write": "0.00000375", "input_cache_write_1h": "0.000006", "overrides":
+        [{"min_prompt_tokens": 200000, "prompt": "0.000006", "completion": "0.0000225",
+        "input_cache_read": "0.0000006", "input_cache_write": "0.0000075", "input_cache_write_1h":
+        "0.000012"}]}, "top_provider": {"context_length": 200000, "max_completion_tokens":
+        64000, "is_moderated": true}, "per_request_limits": null, "supported_parameters":
+        ["include_reasoning", "max_tokens", "reasoning", "stop", "temperature", "tool_choice",
+        "tools", "top_k", "top_p"], "default_parameters": {"temperature": null, "top_p":
+        null, "top_k": null, "frequency_penalty": null, "presence_penalty": null,
+        "repetition_penalty": null}, "supported_voices": null, "knowledge_cutoff":
+        "2025-01-31", "expiration_date": null, "links": {"details": "/api/v1/models/anthropic/claude-4-sonnet-20250522/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        1195, "win_rate": 57.8, "rank": 46}, {"arena": "models", "category": "codecategories",
+        "elo": 1171, "win_rate": 53.4, "rank": 63}, {"arena": "models", "category":
+        "dataviz", "elo": 1178, "win_rate": 55.8, "rank": 59}, {"arena": "models",
+        "category": "gamedev", "elo": 1193, "win_rate": 54.8, "rank": 53}, {"arena":
+        "models", "category": "svg", "elo": 1126, "win_rate": 51.1, "rank": 51}, {"arena":
+        "models", "category": "uicomponent", "elo": 1165, "win_rate": 58, "rank":
+        62}, {"arena": "models", "category": "website", "elo": 1169, "win_rate": 52.4,
+        "rank": 67}], "artificial_analysis": {"intelligence_index": 28.9, "coding_index":
+        37.6, "agentic_index": 16.6}}, "reasoning": {"mandatory": false}}, {"id":
+        "openai/gpt-4.1-mini", "canonical_slug": "openai/gpt-4.1-mini-2025-04-14",
+        "hugging_face_id": "", "name": "OpenAI: GPT-4.1 Mini", "created": 1744651381,
+        "description": "GPT-4.1 Mini is a mid-sized model delivering performance competitive
+        with GPT-4o at substantially lower latency and cost. It retains a 1 million
+        token context window and scores 45.1% on hard...", "context_length": 1047576,
+        "architecture": {"modality": "text+image+file->text", "input_modalities":
+        ["image", "text", "file"], "output_modalities": ["text"], "tokenizer": "GPT",
+        "instruct_type": null}, "pricing": {"prompt": "0.0000004", "completion": "0.0000016",
+        "web_search": "0.01", "input_cache_read": "0.0000001"}, "top_provider": {"context_length":
+        1047576, "max_completion_tokens": 32768, "is_moderated": true}, "per_request_limits":
+        null, "supported_parameters": ["max_completion_tokens", "max_tokens", "response_format",
+        "seed", "structured_outputs", "temperature", "tool_choice", "tools", "top_p"],
+        "default_parameters": {}, "supported_voices": null, "knowledge_cutoff": "2024-06-30",
+        "expiration_date": null, "links": {"details": "/api/v1/models/openai/gpt-4.1-mini-2025-04-14/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        892, "win_rate": 30.5, "rank": 104}, {"arena": "models", "category": "codecategories",
+        "elo": 1023, "win_rate": 47.5, "rank": 101}, {"arena": "models", "category":
+        "dataviz", "elo": 1060, "win_rate": 49.2, "rank": 90}, {"arena": "models",
+        "category": "gamedev", "elo": 1125, "win_rate": 58.5, "rank": 78}, {"arena":
+        "models", "category": "uicomponent", "elo": 997, "win_rate": 45.4, "rank":
+        94}, {"arena": "models", "category": "website", "elo": 1021, "win_rate": 47.8,
+        "rank": 103}], "artificial_analysis": {"intelligence_index": 14.8, "coding_index":
+        20.2, "agentic_index": 1.7}}}, {"id": "openai/gpt-4o", "canonical_slug": "openai/gpt-4o",
+        "hugging_face_id": null, "name": "OpenAI: GPT-4o", "created": 1715558400,
+        "description": "GPT-4o (\"o\" for \"omni\") is OpenAI''s latest AI model,
+        supporting both text and image inputs with text outputs. It maintains the
+        intelligence level of [GPT-4 Turbo](/models/openai/gpt-4-turbo) while being
+        twice as...", "context_length": 128000, "architecture": {"modality": "text+image+file->text",
+        "input_modalities": ["text", "image", "file"], "output_modalities": ["text"],
+        "tokenizer": "GPT", "instruct_type": null}, "pricing": {"prompt": "0.0000025",
+        "completion": "0.00001", "input_cache_read": "0.00000125"}, "top_provider":
+        {"context_length": 128000, "max_completion_tokens": 16384, "is_moderated":
+        true}, "per_request_limits": null, "supported_parameters": ["frequency_penalty",
+        "logit_bias", "logprobs", "max_completion_tokens", "max_tokens", "prediction",
+        "presence_penalty", "response_format", "seed", "stop", "structured_outputs",
+        "temperature", "tool_choice", "tools", "top_logprobs", "top_p", "web_search_options"],
+        "default_parameters": {}, "supported_voices": null, "knowledge_cutoff": "2023-10-31",
+        "expiration_date": null, "links": {"details": "/api/v1/models/openai/gpt-4o/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        924, "win_rate": 39.2, "rank": 100}, {"arena": "models", "category": "codecategories",
+        "elo": 890, "win_rate": 34.8, "rank": 112}, {"arena": "models", "category":
+        "dataviz", "elo": 883, "win_rate": 36, "rank": 110}, {"arena": "models", "category":
+        "gamedev", "elo": 961, "win_rate": 42.3, "rank": 104}, {"arena": "models",
+        "category": "uicomponent", "elo": 921, "win_rate": 38.1, "rank": 104}, {"arena":
+        "models", "category": "website", "elo": 855, "win_rate": 31.5, "rank": 118}]}},
+        {"id": "openai/gpt-3.5-turbo", "canonical_slug": "openai/gpt-3.5-turbo", "hugging_face_id":
+        null, "name": "OpenAI: GPT-3.5 Turbo", "created": 1685232000, "description":
+        "GPT-3.5 Turbo is OpenAI''s fastest model. It can understand and generate
+        natural language or code, and is optimized for chat and traditional completion
+        tasks.\n\nTraining data up to Sep 2021.", "context_length": 16385, "architecture":
+        {"modality": "text->text", "input_modalities": ["text"], "output_modalities":
+        ["text"], "tokenizer": "GPT", "instruct_type": null}, "pricing": {"prompt":
+        "0.0000005", "completion": "0.0000015"}, "top_provider": {"context_length":
+        16385, "max_completion_tokens": 4096, "is_moderated": true}, "per_request_limits":
+        null, "supported_parameters": ["frequency_penalty", "logit_bias", "logprobs",
+        "max_tokens", "presence_penalty", "response_format", "seed", "stop", "structured_outputs",
+        "temperature", "tool_choice", "tools", "top_logprobs", "top_p"], "default_parameters":
+        {}, "supported_voices": null, "knowledge_cutoff": "2021-09-30", "expiration_date":
+        null, "links": {"details": "/api/v1/models/openai/gpt-3.5-turbo/endpoints"},
+        "benchmarks": {"design_arena": [], "artificial_analysis": {"intelligence_index":
+        null, "coding_index": 10.7, "agentic_index": null}}}], "total_count": 338,
+        "links": {"next": null}}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-Generation-Id,X-Provider-Name,cf-ray
+      Age:
+      - '290'
+      CF-Cache-Status:
+      - HIT
+      CF-RAY:
+      - a261034b9b504801-SJC
+      Cache-Control:
+      - public, max-age=300, stale-while-revalidate=3600, stale-if-error=3600
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 04 Aug 2026 22:31:32 GMT
+      Permissions-Policy:
+      - payment=(self "https://checkout.stripe.com" "https://connect-js.stripe.com"
+        "https://js.stripe.com" "https://*.js.stripe.com" "https://hooks.stripe.com")
+      Referrer-Policy:
+      - no-referrer, strict-origin-when-cross-origin
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Host
+      X-Content-Type-Options:
+      - nosniff
+      content-length:
+      - '531616'
+      set-cookie:
+      - __cf_bm=79dDADbPt_I3b_S90YEHPsJgD1EEYjB1ijDsmXMGTi0-1785882692.413528-1.0.1.1-siO23rfsCgWQWaApgaRvtGCCaF765FZAiuZ9yC67vyTczv7Nt.kwtOxUPK6amFXHZtGZMY9HtwqChETobw7XPRG53L50yy3DC6KLQqe80rw3g96hxB.DIEXxe2ckETtG;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=openrouter.ai; Expires=Tue,
+        04 Aug 2026 23:01:32 GMT
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"include":["reasoning.encrypted_content"],"input":[{"role":"user","content":"What
+      is 2 + 2? Reply with the number only."}],"max_output_tokens":128,"model":"openai/gpt-5-nano","reasoning":{"summary":"auto","effort":"minimal"},"store":false,"stream":true}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '254'
+      Content-Type:
+      - application/json
+      HTTP-Referer:
+      - https://llm.datasette.io/
+      Host:
+      - openrouter.ai
+      User-Agent:
+      - OpenAI/Python 2.32.0
+      X-OpenRouter-Title:
+      - LLM
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.32.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.14.3
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://openrouter.ai/api/v1/responses
+  response:
+    body:
+      string: ": \n\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"gen-1785882693-G0Ba9AGVEVeNhHohmw0g\",\"object\":\"response\",\"created_at\":1785882693,\"model\":\"openai/gpt-5-nano\",\"status\":\"in_progress\",\"completed_at\":null,\"output\":[],\"error\":null,\"incomplete_details\":null,\"tools\":[],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true,\"max_output_tokens\":128,\"temperature\":1,\"top_p\":1,\"presence_penalty\":0,\"frequency_penalty\":0,\"top_logprobs\":0,\"max_tool_calls\":null,\"metadata\":{},\"background\":false,\"previous_response_id\":null,\"service_tier\":\"auto\",\"truncation\":\"disabled\",\"store\":false,\"instructions\":null,\"text\":{\"format\":{\"type\":\"text\"}},\"reasoning\":{\"effort\":\"minimal\",\"summary\":\"auto\"},\"safety_identifier\":null,\"prompt_cache_key\":null,\"prompt_cache_options\":null,\"usage\":null},\"sequence_number\":0}\n\ndata:
+        {\"type\":\"response.in_progress\",\"response\":{\"id\":\"gen-1785882693-G0Ba9AGVEVeNhHohmw0g\",\"object\":\"response\",\"created_at\":1785882693,\"model\":\"openai/gpt-5-nano\",\"status\":\"in_progress\",\"completed_at\":null,\"output\":[],\"error\":null,\"incomplete_details\":null,\"tools\":[],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true,\"max_output_tokens\":128,\"temperature\":1,\"top_p\":1,\"presence_penalty\":0,\"frequency_penalty\":0,\"top_logprobs\":0,\"max_tool_calls\":null,\"metadata\":{},\"background\":false,\"previous_response_id\":null,\"service_tier\":\"auto\",\"truncation\":\"disabled\",\"store\":false,\"instructions\":null,\"text\":{\"format\":{\"type\":\"text\"}},\"reasoning\":{\"effort\":\"minimal\",\"summary\":\"auto\"},\"safety_identifier\":null,\"prompt_cache_key\":null,\"prompt_cache_options\":null,\"usage\":null},\"sequence_number\":1}\n\ndata:
+        {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"id\":\"rs_067d9e9761f303d7016a72684624808192a8620d7939381d57\",\"type\":\"reasoning\",\"status\":\"in_progress\",\"summary\":[]},\"sequence_number\":2}\n\ndata:
+        {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"id\":\"rs_067d9e9761f303d7016a72684624808192a8620d7939381d57\",\"type\":\"reasoning\",\"status\":\"completed\",\"summary\":[],\"encrypted_content\":\"gAAAAABqcmhGUY8i3WwdW_uOby4-wInoQN26NqhbIjFfW0ivIBnztOfSTetq8DePid70ioeO-i7qz5msHhsMfRxX9rFyoFTMdBgYNX20E8L3FoeXRpWsLJXqdzjajHYODylKUcQ3RdzPiVJNaARdO_3DfJ4tGLyMMC01-nCQm4f0YMwsiBQbu4HqPqak89d7S9aD8SYmUQoFJwlXwv3F_UVjCjxIzDTVJ21B57CbAWEIlggufV-8RCCU7iDEgAikZ098GdaG-5YsmLsktSZYVLhFayHwm0RZ6ctWLH3Pnbpb9udteAYuqoT3oi3BqQPSH98SKiAPLS0bdIxJH_Yo50YgN06T5228Ln3rFHJpmQIfGRfdAcwZ-xtRfRLXtMoB-5y8d6_QQILV9ZzhbFyWzE567GstZzEQ_7mIImF2uQ3VOuGKFQEWf1pFimSpuMrVkoQQpEuzs50Nr9hRZd_iIP1fd94kzchNnQwMPPwUoaGvjAfWaTy-MCKgeQlUFGddKY96Git5fdOPylbzbheekaxMuiR9dSFnxtXCQFUiipkKLJzyEIKteI9NK8XcZuLRHq8kuk9NXEa22wvT4-rUaOUdalZsXQ6hnGrI2qnNEXeatEpycuPVOb863Dts3F7zVtYqp2fPe3xtvjz0tRzOhwnKQDhHVKzOKzq3hTTnstCc65FDa6L1LkNobpiTWQc81b_n9jXFo_u-UZIY0Eni9YGTYmKQJari5b9j9dP3DQf5tmMBuhNcNxxt_haoD6He-jsQIwUf2VYQXPWaLVMPSXDPWBiwV0P8fHWqO7RQjRNiKmc-4X1CxlM2quiXrMUbB462PH9yHYcFGxXiCgghvEvv0z8A9benEJIv8BZXV9Lwosf2ebrjF8YRd936GHlTPExZyUeCfxyBxfL2S57_mwkmu4pnq2aZUAjsxzghGluf7ZGh7b8oie5xSDUczvnOfRm9szwEUhfESptHj9f-PoP8XShHs7AcAftHla097WKZpWNT-iy6rfE=.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LW5hbm8tMjAyNS0wOC0wN3xvcGVuYWkifQ\",\"format\":\"openai-responses-v1\"},\"sequence_number\":3}\n\ndata:
+        {\"type\":\"response.output_item.added\",\"output_index\":1,\"item\":{\"id\":\"msg_tmp_tx1kq1rrvym\",\"type\":\"message\",\"status\":\"in_progress\",\"role\":\"assistant\",\"content\":[]},\"sequence_number\":4}\n\ndata:
+        {\"type\":\"response.content_part.added\",\"output_index\":1,\"item_id\":\"msg_tmp_tx1kq1rrvym\",\"content_index\":0,\"part\":{\"type\":\"output_text\",\"text\":\"\",\"annotations\":[],\"logprobs\":[]},\"sequence_number\":5}\n\ndata:
+        {\"type\":\"response.output_text.delta\",\"output_index\":1,\"item_id\":\"msg_tmp_tx1kq1rrvym\",\"content_index\":0,\"delta\":\"4\",\"logprobs\":[],\"sequence_number\":6}\n\ndata:
+        {\"type\":\"response.output_text.done\",\"output_index\":1,\"item_id\":\"msg_tmp_tx1kq1rrvym\",\"content_index\":0,\"text\":\"4\",\"logprobs\":[],\"sequence_number\":7}\n\ndata:
+        {\"type\":\"response.content_part.done\",\"output_index\":1,\"item_id\":\"msg_tmp_tx1kq1rrvym\",\"content_index\":0,\"part\":{\"type\":\"output_text\",\"text\":\"4\",\"annotations\":[],\"logprobs\":[]},\"sequence_number\":8}\n\ndata:
+        {\"type\":\"response.output_item.done\",\"output_index\":1,\"item\":{\"id\":\"msg_tmp_tx1kq1rrvym\",\"type\":\"message\",\"status\":\"completed\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"4\",\"annotations\":[],\"logprobs\":[]}]},\"sequence_number\":9}\n\ndata:
+        {\"type\":\"response.completed\",\"response\":{\"id\":\"gen-1785882693-G0Ba9AGVEVeNhHohmw0g\",\"object\":\"response\",\"created_at\":1785882693,\"model\":\"openai/gpt-5-nano\",\"status\":\"completed\",\"completed_at\":1785882694,\"output\":[{\"id\":\"rs_067d9e9761f303d7016a72684624808192a8620d7939381d57\",\"type\":\"reasoning\",\"status\":\"completed\",\"summary\":[],\"encrypted_content\":\"gAAAAABqcmhGUY8i3WwdW_uOby4-wInoQN26NqhbIjFfW0ivIBnztOfSTetq8DePid70ioeO-i7qz5msHhsMfRxX9rFyoFTMdBgYNX20E8L3FoeXRpWsLJXqdzjajHYODylKUcQ3RdzPiVJNaARdO_3DfJ4tGLyMMC01-nCQm4f0YMwsiBQbu4HqPqak89d7S9aD8SYmUQoFJwlXwv3F_UVjCjxIzDTVJ21B57CbAWEIlggufV-8RCCU7iDEgAikZ098GdaG-5YsmLsktSZYVLhFayHwm0RZ6ctWLH3Pnbpb9udteAYuqoT3oi3BqQPSH98SKiAPLS0bdIxJH_Yo50YgN06T5228Ln3rFHJpmQIfGRfdAcwZ-xtRfRLXtMoB-5y8d6_QQILV9ZzhbFyWzE567GstZzEQ_7mIImF2uQ3VOuGKFQEWf1pFimSpuMrVkoQQpEuzs50Nr9hRZd_iIP1fd94kzchNnQwMPPwUoaGvjAfWaTy-MCKgeQlUFGddKY96Git5fdOPylbzbheekaxMuiR9dSFnxtXCQFUiipkKLJzyEIKteI9NK8XcZuLRHq8kuk9NXEa22wvT4-rUaOUdalZsXQ6hnGrI2qnNEXeatEpycuPVOb863Dts3F7zVtYqp2fPe3xtvjz0tRzOhwnKQDhHVKzOKzq3hTTnstCc65FDa6L1LkNobpiTWQc81b_n9jXFo_u-UZIY0Eni9YGTYmKQJari5b9j9dP3DQf5tmMBuhNcNxxt_haoD6He-jsQIwUf2VYQXPWaLVMPSXDPWBiwV0P8fHWqO7RQjRNiKmc-4X1CxlM2quiXrMUbB462PH9yHYcFGxXiCgghvEvv0z8A9benEJIv8BZXV9Lwosf2ebrjF8YRd936GHlTPExZyUeCfxyBxfL2S57_mwkmu4pnq2aZUAjsxzghGluf7ZGh7b8oie5xSDUczvnOfRm9szwEUhfESptHj9f-PoP8XShHs7AcAftHla097WKZpWNT-iy6rfE=.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LW5hbm8tMjAyNS0wOC0wN3xvcGVuYWkifQ\",\"format\":\"openai-responses-v1\"},{\"id\":\"msg_tmp_tx1kq1rrvym\",\"type\":\"message\",\"role\":\"assistant\",\"status\":\"completed\",\"content\":[{\"type\":\"output_text\",\"text\":\"4\",\"annotations\":[],\"logprobs\":[]}]}],\"error\":null,\"incomplete_details\":null,\"tools\":[],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true,\"max_output_tokens\":128,\"temperature\":1,\"top_p\":1,\"presence_penalty\":0,\"frequency_penalty\":0,\"top_logprobs\":0,\"max_tool_calls\":null,\"metadata\":{},\"background\":false,\"previous_response_id\":null,\"service_tier\":\"default\",\"truncation\":\"disabled\",\"store\":false,\"instructions\":null,\"text\":{\"format\":{\"type\":\"text\"}},\"reasoning\":{\"effort\":\"minimal\",\"summary\":\"detailed\",\"context\":\"current_turn\",\"mode\":\"standard\"},\"safety_identifier\":null,\"prompt_cache_key\":null,\"prompt_cache_options\":null,\"usage\":{\"input_tokens\":20,\"input_tokens_details\":{\"cached_tokens\":0},\"output_tokens\":19,\"output_tokens_details\":{\"reasoning_tokens\":0},\"total_tokens\":39,\"cost\":0.0000086,\"is_byok\":false,\"cost_details\":{\"upstream_inference_cost\":0.0000086,\"upstream_inference_input_cost\":0.000001,\"upstream_inference_output_cost\":0.0000076}}},\"sequence_number\":10}\n\ndata:
+        [DONE]\n\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-RAY:
+      - a26103538ee5ef28-SJC
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Tue, 04 Aug 2026 22:31:34 GMT
+      Permissions-Policy:
+      - payment=(self "https://checkout.stripe.com" "https://connect-js.stripe.com"
+        "https://js.stripe.com" "https://*.js.stripe.com" "https://hooks.stripe.com")
+      Referrer-Policy:
+      - no-referrer, strict-origin-when-cross-origin
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Generation-Id:
+      - gen-1785882693-G0Ba9AGVEVeNhHohmw0g
+      access-control-expose-headers:
+      - X-Generation-Id,X-Provider-Name,cf-ray
+      set-cookie:
+      - __cf_bm=qHYSJH1EKeWjXHrb19JRh4tvYqAmCuVA2LEEUo5MMCI-1785882693.6819105-1.0.1.1-4fitB3Io_.bhGsbY4zm9wFGsXQFu.fBPUvfzZiTKy7QkaeJEx74BTNPP1kigqzsS8Yw9xumGCU2_iI9C0fm7GCi9Sk2BxgProGPQ4rVufsib5YSIfDzXq830x7KJbCVC;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=openrouter.ai; Expires=Tue,
+        04 Aug 2026 23:01:34 GMT
+    status:
+      code: 200
+      message: OK
+version: 1

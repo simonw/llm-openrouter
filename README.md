@@ -51,6 +51,9 @@ To run a prompt against a model, pass its full model ID to the `-m` option, like
 ```bash
 llm -m openrouter/anthropic/claude-sonnet-4 "Five spooky names for a pet tarantula"
 ```
+Models use OpenRouter's Responses API by default. You can temporarily use the
+older Chat Completions API for a prompt with `-o chat_completions 1`.
+
 You can set a shorter alias for a model using the `llm aliases` command like so:
 ```bash
 llm aliases set claude openrouter/anthropic/claude-sonnet-4
@@ -62,7 +65,7 @@ cat llm_openrouter.py | llm -m claude -s 'write some pytest tests for this'
 
 Images are supported too, for some models:
 ```bash
-llm -m openrouter/anthropic/claude-3.5-sonnet 'describe this image' -a https://static.simonwillison.net/static/2024/pelicans.jpg
+llm -m openrouter/anthropic/claude-sonnet-4 'describe this image' -a https://static.simonwillison.net/static/2024/pelicans.jpg
 llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 ```
 
@@ -82,7 +85,7 @@ And look for models that list these attachment types:
 You can feed these models images as URLs or file paths, for example:
 
 ```bash
-llm -m openrouter/google/gemini-flash-1.5 'describe image' \
+llm -m openrouter/google/gemini-2.5-flash 'describe image' \
   -a https://static.simonwillison.net/static/2025/two-pelicans.jpg
 ```
 
@@ -95,7 +98,7 @@ Some of the models provided by OpenRouter are compatible with this feature, see 
 `llm-openrouter` currently enables schema support for the models in that list. Models have varying levels of quality in their schema support, so test carefully rather than assuming all models will correctly work the same.
 
 ```bash
-llm -m openrouter/google/gemini-flash-1.5 'invent 3 cool capybaras' \
+llm -m openrouter/google/gemini-2.5-flash 'invent 3 cool capybaras' \
   --schema-multi 'name,bio'
 ```
 Output:
@@ -131,7 +134,7 @@ llm -m openrouter/openai/gpt-5 \
 Example output:
 ```
 Tool call: llm_version({})
-  0.27.1
+  0.32
 
 
 Tool call: llm_time({})
@@ -144,7 +147,7 @@ Tool call: llm_time({})
     "is_dst": true
   }
 
-LLM version: 0.27.1
+LLM version: 0.32
 Current time: 2025-09-20 16:35:53 PDT (2025-09-20 23:35:53 UTC)
 ```
 
@@ -152,7 +155,8 @@ Current time: 2025-09-20 16:35:53 PDT (2025-09-20 23:35:53 UTC)
 
 Some OpenRouter models such as [GPT-5](https://openrouter.ai/openai/gpt-5) support options for controlling reasoning:
 
-- `-o reasoning_effort low|medium|high` - control reasoning effort
+- `-o reasoning_effort none|minimal|low|medium|high|xhigh|max` - control
+  reasoning effort (supported values vary by model)
 - `-o reasoning_max_tokens 2048` - an alternative way of specifying effort for some models
 - `-o reasoning_enabled true` - use this to enable reasoning without setting an effort via one of the other two options
 
@@ -176,16 +180,18 @@ llm -m openrouter/meta-llama/llama-3.1-8b-instruct hi \
 ```
 This specifies that you would like only providers that [support fp8 quantization](https://openrouter.ai/docs/features/provider-routing#example-requesting-fp8-quantization) for that model.
 
-### Incorporating search results from Exa
+### Web search
 
-OpenRouter have [a partnership](https://openrouter.ai/docs/features/web-search) with [Exa](https://exa.ai/) where prompts through _any_ supported model can be augmented with relevant search results from the Exa index - a form of RAG.
+OpenRouter can give supported models access to web search using its
+[`openrouter:web_search` server tool](https://openrouter.ai/docs/guides/features/server-tools/web-search).
 
-Enable this feature using the `-o online 1` option:
+Enable it using the `-o online 1` option:
 
 ```bash
 llm -m openrouter/mistralai/mistral-small -o online 1 'key events on march 1st 2025'
 ```
-Consult the OpenRouter documentation for [current pricing](https://openrouter.ai/docs/features/web-search#pricing).
+The model decides when and whether to search. Consult the OpenRouter
+documentation for current configuration options and pricing.
 
 ### Listing models
 

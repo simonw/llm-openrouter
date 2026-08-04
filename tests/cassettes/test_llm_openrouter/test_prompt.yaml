@@ -2,15 +2,15 @@ interactions:
 - request:
     body: ''
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
+      Host:
       - openrouter.ai
-      user-agent:
+      User-Agent:
       - python-httpx/0.28.1
     method: GET
     uri: https://openrouter.ai/api/v1/models
@@ -21,104 +21,112 @@ interactions:
         "description": "Claude Sonnet 4 significantly enhances the capabilities of
         its predecessor, Sonnet 3.7, excelling in both coding and reasoning tasks
         with improved precision and controllability. Achieving state-of-the-art performance
-        on SWE-bench (72.7%), Sonnet 4 balances capability and computational efficiency,
-        making it suitable for a broad range of applications from routine coding tasks
-        to complex software development projects. Key enhancements include improved
-        autonomous codebase navigation, reduced error rates in agent-driven workflows,
-        and increased reliability in following intricate instructions. Sonnet 4 is
-        optimized for practical everyday use, providing advanced reasoning capabilities
-        while maintaining efficiency and responsiveness in diverse internal and external
-        scenarios.\n\nRead more at the [blog post here](https://www.anthropic.com/news/claude-4)",
-        "context_length": 200000, "architecture": {"modality": "text+image->text",
-        "input_modalities": ["image", "text"], "output_modalities": ["text"], "tokenizer":
-        "Claude", "instruct_type": null}, "pricing": {"prompt": "0.000003", "completion":
-        "0.000015", "request": "0", "image": "0.0048", "audio": "0", "web_search":
-        "0", "internal_reasoning": "0", "input_cache_read": "0.0000003", "input_cache_write":
-        "0.00000375"}, "top_provider": {"context_length": 200000, "max_completion_tokens":
-        64000, "is_moderated": false}, "per_request_limits": null, "supported_parameters":
-        ["include_reasoning", "max_tokens", "reasoning", "stop", "temperature", "tool_choice",
-        "tools", "top_k", "top_p"]}, {"id": "openai/gpt-4.1-mini", "canonical_slug":
-        "openai/gpt-4.1-mini-2025-04-14", "hugging_face_id": "", "name": "OpenAI:
-        GPT-4.1 Mini", "created": 1744651381, "description": "GPT-4.1 Mini is a mid-sized
-        model delivering performance competitive with GPT-4o at substantially lower
-        latency and cost. It retains a 1 million token context window and scores 45.1%
-        on hard instruction evals, 35.8% on MultiChallenge, and 84.1% on IFEval. Mini
-        also shows strong coding ability (e.g., 31.6% on Aider\u2019s polyglot diff
-        benchmark) and vision understanding, making it suitable for interactive applications
-        with tight performance constraints.", "context_length": 1047576, "architecture":
-        {"modality": "text+image->text", "input_modalities": ["image", "text", "file"],
-        "output_modalities": ["text"], "tokenizer": "GPT", "instruct_type": null},
-        "pricing": {"prompt": "0.0000004", "completion": "0.0000016", "request": "0",
-        "image": "0", "audio": "0", "web_search": "0", "internal_reasoning": "0",
-        "input_cache_read": "0.0000001"}, "top_provider": {"context_length": 1047576,
-        "max_completion_tokens": 32768, "is_moderated": true}, "per_request_limits":
-        null, "supported_parameters": ["frequency_penalty", "logit_bias", "logprobs",
-        "max_tokens", "presence_penalty", "response_format", "seed", "stop", "structured_outputs",
-        "temperature", "tool_choice", "tools", "top_logprobs", "top_p", "web_search_options"]},
-        {"id": "anthropic/claude-3.5-sonnet", "canonical_slug": "anthropic/claude-3.5-sonnet",
-        "hugging_face_id": null, "name": "Anthropic: Claude 3.5 Sonnet", "created":
-        1729555200, "description": "New Claude 3.5 Sonnet delivers better-than-Opus
-        capabilities, faster-than-Sonnet speeds, at the same Sonnet prices. Sonnet
-        is particularly good at:\n\n- Coding: Scores ~49% on SWE-Bench Verified, higher
-        than the last best score, and without any fancy prompt scaffolding\n- Data
-        science: Augments human data science expertise; navigates unstructured data
-        while using multiple tools for insights\n- Visual processing: excelling at
-        interpreting charts, graphs, and images, accurately transcribing text to derive
-        insights beyond just the text alone\n- Agentic tasks: exceptional tool use,
-        making it great at agentic tasks (i.e. complex, multi-step problem solving
-        tasks that require engaging with other systems)\n\n#multimodal", "context_length":
-        200000, "architecture": {"modality": "text+image->text", "input_modalities":
-        ["text", "image"], "output_modalities": ["text"], "tokenizer": "Claude", "instruct_type":
-        null}, "pricing": {"prompt": "0.000003", "completion": "0.000015", "request":
-        "0", "image": "0.0048", "audio": "0", "web_search": "0", "internal_reasoning":
-        "0", "input_cache_read": "0.0000003", "input_cache_write": "0.00000375"},
-        "top_provider": {"context_length": 200000, "max_completion_tokens": 8192,
-        "is_moderated": true}, "per_request_limits": null, "supported_parameters":
-        ["max_tokens", "stop", "temperature", "tool_choice", "tools", "top_k", "top_p"]},
-        {"id": "openai/gpt-4o", "canonical_slug": "openai/gpt-4o", "hugging_face_id":
-        null, "name": "OpenAI: GPT-4o", "created": 1715558400, "description": "GPT-4o
-        (\"o\" for \"omni\") is OpenAI''s latest AI model, supporting both text and
-        image inputs with text outputs. It maintains the intelligence level of [GPT-4
-        Turbo](/models/openai/gpt-4-turbo) while being twice as fast and 50% more
-        cost-effective. GPT-4o also offers improved performance in processing non-English
-        languages and enhanced visual capabilities.\n\nFor benchmarking against other
-        models, it was briefly called [\"im-also-a-good-gpt2-chatbot\"](https://twitter.com/LiamFedus/status/1790064963966370209)\n\n#multimodal",
-        "context_length": 128000, "architecture": {"modality": "text+image->text",
+        on SWE-bench (72.7%),...", "context_length": 1000000, "architecture": {"modality":
+        "text+image+file->text", "input_modalities": ["image", "text", "file"], "output_modalities":
+        ["text"], "tokenizer": "Claude", "instruct_type": null}, "pricing": {"prompt":
+        "0.000003", "completion": "0.000015", "web_search": "0.01", "input_cache_read":
+        "0.0000003", "input_cache_write": "0.00000375", "input_cache_write_1h": "0.000006",
+        "overrides": [{"min_prompt_tokens": 200000, "prompt": "0.000006", "completion":
+        "0.0000225", "input_cache_read": "0.0000006", "input_cache_write": "0.0000075",
+        "input_cache_write_1h": "0.000012"}]}, "top_provider": {"context_length":
+        200000, "max_completion_tokens": 64000, "is_moderated": true}, "per_request_limits":
+        null, "supported_parameters": ["include_reasoning", "max_tokens", "reasoning",
+        "stop", "temperature", "tool_choice", "tools", "top_k", "top_p"], "default_parameters":
+        {"temperature": null, "top_p": null, "top_k": null, "frequency_penalty": null,
+        "presence_penalty": null, "repetition_penalty": null}, "supported_voices":
+        null, "knowledge_cutoff": "2025-01-31", "expiration_date": null, "links":
+        {"details": "/api/v1/models/anthropic/claude-4-sonnet-20250522/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        1195, "win_rate": 57.8, "rank": 46}, {"arena": "models", "category": "codecategories",
+        "elo": 1171, "win_rate": 53.4, "rank": 63}, {"arena": "models", "category":
+        "dataviz", "elo": 1178, "win_rate": 55.8, "rank": 59}, {"arena": "models",
+        "category": "gamedev", "elo": 1193, "win_rate": 54.8, "rank": 53}, {"arena":
+        "models", "category": "svg", "elo": 1126, "win_rate": 51.1, "rank": 51}, {"arena":
+        "models", "category": "uicomponent", "elo": 1165, "win_rate": 58, "rank":
+        62}, {"arena": "models", "category": "website", "elo": 1169, "win_rate": 52.4,
+        "rank": 67}], "artificial_analysis": {"intelligence_index": 28.9, "coding_index":
+        37.6, "agentic_index": 16.6}}, "reasoning": {"mandatory": false}}, {"id":
+        "openai/gpt-4.1-mini", "canonical_slug": "openai/gpt-4.1-mini-2025-04-14",
+        "hugging_face_id": "", "name": "OpenAI: GPT-4.1 Mini", "created": 1744651381,
+        "description": "GPT-4.1 Mini is a mid-sized model delivering performance competitive
+        with GPT-4o at substantially lower latency and cost. It retains a 1 million
+        token context window and scores 45.1% on hard...", "context_length": 1047576,
+        "architecture": {"modality": "text+image+file->text", "input_modalities":
+        ["image", "text", "file"], "output_modalities": ["text"], "tokenizer": "GPT",
+        "instruct_type": null}, "pricing": {"prompt": "0.0000004", "completion": "0.0000016",
+        "web_search": "0.01", "input_cache_read": "0.0000001"}, "top_provider": {"context_length":
+        1047576, "max_completion_tokens": 32768, "is_moderated": true}, "per_request_limits":
+        null, "supported_parameters": ["max_completion_tokens", "max_tokens", "response_format",
+        "seed", "structured_outputs", "temperature", "tool_choice", "tools", "top_p"],
+        "default_parameters": {}, "supported_voices": null, "knowledge_cutoff": "2024-06-30",
+        "expiration_date": null, "links": {"details": "/api/v1/models/openai/gpt-4.1-mini-2025-04-14/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        892, "win_rate": 30.5, "rank": 104}, {"arena": "models", "category": "codecategories",
+        "elo": 1023, "win_rate": 47.5, "rank": 101}, {"arena": "models", "category":
+        "dataviz", "elo": 1060, "win_rate": 49.2, "rank": 90}, {"arena": "models",
+        "category": "gamedev", "elo": 1125, "win_rate": 58.5, "rank": 78}, {"arena":
+        "models", "category": "uicomponent", "elo": 997, "win_rate": 45.4, "rank":
+        94}, {"arena": "models", "category": "website", "elo": 1021, "win_rate": 47.8,
+        "rank": 103}], "artificial_analysis": {"intelligence_index": 14.8, "coding_index":
+        20.2, "agentic_index": 1.7}}}, {"id": "openai/gpt-4o", "canonical_slug": "openai/gpt-4o",
+        "hugging_face_id": null, "name": "OpenAI: GPT-4o", "created": 1715558400,
+        "description": "GPT-4o (\"o\" for \"omni\") is OpenAI''s latest AI model,
+        supporting both text and image inputs with text outputs. It maintains the
+        intelligence level of [GPT-4 Turbo](/models/openai/gpt-4-turbo) while being
+        twice as...", "context_length": 128000, "architecture": {"modality": "text+image+file->text",
         "input_modalities": ["text", "image", "file"], "output_modalities": ["text"],
         "tokenizer": "GPT", "instruct_type": null}, "pricing": {"prompt": "0.0000025",
-        "completion": "0.00001", "request": "0", "image": "0.003613", "audio": "0",
-        "web_search": "0", "internal_reasoning": "0", "input_cache_read": "0.00000125"},
-        "top_provider": {"context_length": 128000, "max_completion_tokens": 16384,
-        "is_moderated": true}, "per_request_limits": null, "supported_parameters":
-        ["frequency_penalty", "logit_bias", "logprobs", "max_tokens", "presence_penalty",
-        "response_format", "seed", "stop", "structured_outputs", "temperature", "tool_choice",
-        "tools", "top_logprobs", "top_p", "web_search_options"]}, {"id": "openai/gpt-3.5-turbo",
-        "canonical_slug": "openai/gpt-3.5-turbo", "hugging_face_id": null, "name":
-        "OpenAI: GPT-3.5 Turbo", "created": 1685232000, "description": "GPT-3.5 Turbo
-        is OpenAI''s fastest model. It can understand and generate natural language
-        or code, and is optimized for chat and traditional completion tasks.\n\nTraining
-        data up to Sep 2021.", "context_length": 16385, "architecture": {"modality":
-        "text->text", "input_modalities": ["text"], "output_modalities": ["text"],
-        "tokenizer": "GPT", "instruct_type": null}, "pricing": {"prompt": "0.0000005",
-        "completion": "0.0000015", "request": "0", "image": "0", "audio": "0", "web_search":
-        "0", "internal_reasoning": "0"}, "top_provider": {"context_length": 16385,
-        "max_completion_tokens": 4096, "is_moderated": true}, "per_request_limits":
+        "completion": "0.00001", "input_cache_read": "0.00000125"}, "top_provider":
+        {"context_length": 128000, "max_completion_tokens": 16384, "is_moderated":
+        true}, "per_request_limits": null, "supported_parameters": ["frequency_penalty",
+        "logit_bias", "logprobs", "max_completion_tokens", "max_tokens", "prediction",
+        "presence_penalty", "response_format", "seed", "stop", "structured_outputs",
+        "temperature", "tool_choice", "tools", "top_logprobs", "top_p", "web_search_options"],
+        "default_parameters": {}, "supported_voices": null, "knowledge_cutoff": "2023-10-31",
+        "expiration_date": null, "links": {"details": "/api/v1/models/openai/gpt-4o/endpoints"},
+        "benchmarks": {"design_arena": [{"arena": "models", "category": "3d", "elo":
+        924, "win_rate": 39.2, "rank": 100}, {"arena": "models", "category": "codecategories",
+        "elo": 890, "win_rate": 34.8, "rank": 112}, {"arena": "models", "category":
+        "dataviz", "elo": 883, "win_rate": 36, "rank": 110}, {"arena": "models", "category":
+        "gamedev", "elo": 961, "win_rate": 42.3, "rank": 104}, {"arena": "models",
+        "category": "uicomponent", "elo": 921, "win_rate": 38.1, "rank": 104}, {"arena":
+        "models", "category": "website", "elo": 855, "win_rate": 31.5, "rank": 118}]}},
+        {"id": "openai/gpt-3.5-turbo", "canonical_slug": "openai/gpt-3.5-turbo", "hugging_face_id":
+        null, "name": "OpenAI: GPT-3.5 Turbo", "created": 1685232000, "description":
+        "GPT-3.5 Turbo is OpenAI''s fastest model. It can understand and generate
+        natural language or code, and is optimized for chat and traditional completion
+        tasks.\n\nTraining data up to Sep 2021.", "context_length": 16385, "architecture":
+        {"modality": "text->text", "input_modalities": ["text"], "output_modalities":
+        ["text"], "tokenizer": "GPT", "instruct_type": null}, "pricing": {"prompt":
+        "0.0000005", "completion": "0.0000015"}, "top_provider": {"context_length":
+        16385, "max_completion_tokens": 4096, "is_moderated": true}, "per_request_limits":
         null, "supported_parameters": ["frequency_penalty", "logit_bias", "logprobs",
         "max_tokens", "presence_penalty", "response_format", "seed", "stop", "structured_outputs",
-        "temperature", "tool_choice", "tools", "top_logprobs", "top_p"]}]}'
+        "temperature", "tool_choice", "tools", "top_logprobs", "top_p"], "default_parameters":
+        {}, "supported_voices": null, "knowledge_cutoff": "2021-09-30", "expiration_date":
+        null, "links": {"details": "/api/v1/models/openai/gpt-3.5-turbo/endpoints"},
+        "benchmarks": {"design_arena": [], "artificial_analysis": {"intelligence_index":
+        null, "coding_index": 10.7, "agentic_index": null}}}], "total_count": 338,
+        "links": {"next": null}}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
-      CDN-Cache-Control:
-      - max-age=300
+      Access-Control-Expose-Headers:
+      - X-Generation-Id,X-Provider-Name,cf-ray
+      Age:
+      - '160'
+      CF-Cache-Status:
+      - HIT
       CF-RAY:
-      - 96aa88358f5b8075-SJC
+      - a260f8ccc9bef64e-SJC
+      Cache-Control:
+      - public, max-age=300, stale-while-revalidate=3600, stale-if-error=3600
       Connection:
       - keep-alive
       Content-Type:
       - application/json
       Date:
-      - Wed, 06 Aug 2025 00:49:02 GMT
+      - Tue, 04 Aug 2026 22:24:22 GMT
       Permissions-Policy:
       - payment=(self "https://checkout.stripe.com" "https://connect-js.stripe.com"
         "https://js.stripe.com" "https://*.js.stripe.com" "https://hooks.stripe.com")
@@ -129,88 +137,101 @@ interactions:
       Transfer-Encoding:
       - chunked
       Vary:
-      - Accept-Encoding
+      - Host
       X-Content-Type-Options:
       - nosniff
       content-length:
-      - '417177'
+      - '531616'
+      set-cookie:
+      - __cf_bm=o7INiIqYV14V0KQM4eVQRyVm77NjAYhGQC_0nwxKL58-1785882262.5297272-1.0.1.1-o.ZtdhR634hatchbrc7Jy3inUs5kjBzYj.O3QQ5AEho1pmwWLLYNceQH2k7r08mq0VmFTGpS5V0VGVF0YdvoEZA4nwtLEth7IRReca75UqokQZ0iKRNCKpxf9VpC9N2B;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=openrouter.ai; Expires=Tue,
+        04 Aug 2026 22:54:22 GMT
     status:
       code: 200
       message: OK
 - request:
-    body: '{"messages":[{"role":"user","content":"Two names for a pet pelican, be
-      brief"}],"model":"openai/gpt-4o","stream":true,"stream_options":{"include_usage":true}}'
+    body: '{"input":[{"role":"user","content":"Two names for a pet pelican, be brief"}],"model":"openai/gpt-4o","store":false,"stream":true}'
     headers:
-      accept:
+      Accept:
       - application/json
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      content-length:
-      - '158'
-      content-type:
+      Content-Length:
+      - '129'
+      Content-Type:
       - application/json
-      host:
-      - openrouter.ai
-      http-referer:
+      HTTP-Referer:
       - https://llm.datasette.io/
-      user-agent:
-      - OpenAI/Python 1.97.1
-      x-stainless-arch:
-      - x64
-      x-stainless-async:
+      Host:
+      - openrouter.ai
+      User-Agent:
+      - OpenAI/Python 2.32.0
+      X-OpenRouter-Title:
+      - LLM
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
       - 'false'
-      x-stainless-lang:
+      X-Stainless-Lang:
       - python
-      x-stainless-os:
-      - Linux
-      x-stainless-package-version:
-      - 1.97.1
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.32.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.14.3
       x-stainless-read-timeout:
       - '600'
       x-stainless-retry-count:
       - '0'
-      x-stainless-runtime:
-      - CPython
-      x-stainless-runtime-version:
-      - 3.12.9
-      x-title:
-      - LLM
     method: POST
-    uri: https://openrouter.ai/api/v1/chat/completions
+    uri: https://openrouter.ai/api/v1/responses
   response:
     body:
-      string: ': OPENROUTER PROCESSING
+      string: 'data: {"type":"response.created","response":{"id":"gen-1785882264-Dc8eXAHSnjmKOswYtXdR","object":"response","created_at":1785882264,"model":"openai/gpt-4o","status":"in_progress","completed_at":null,"output":[],"error":null,"incomplete_details":null,"tools":[],"tool_choice":"auto","parallel_tool_calls":true,"max_output_tokens":null,"temperature":1,"top_p":1,"presence_penalty":0,"frequency_penalty":0,"top_logprobs":0,"max_tool_calls":null,"metadata":{},"background":false,"previous_response_id":null,"service_tier":"auto","truncation":"disabled","store":false,"instructions":null,"text":{"format":{"type":"text"}},"reasoning":null,"safety_identifier":null,"prompt_cache_key":null,"prompt_cache_options":null,"usage":null},"sequence_number":0}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.in_progress","response":{"id":"gen-1785882264-Dc8eXAHSnjmKOswYtXdR","object":"response","created_at":1785882264,"model":"openai/gpt-4o","status":"in_progress","completed_at":null,"output":[],"error":null,"incomplete_details":null,"tools":[],"tool_choice":"auto","parallel_tool_calls":true,"max_output_tokens":null,"temperature":1,"top_p":1,"presence_penalty":0,"frequency_penalty":0,"top_logprobs":0,"max_tool_calls":null,"metadata":{},"background":false,"previous_response_id":null,"service_tier":"auto","truncation":"disabled","store":false,"instructions":null,"text":{"format":{"type":"text"}},"reasoning":null,"safety_identifier":null,"prompt_cache_key":null,"prompt_cache_options":null,"usage":null},"sequence_number":1}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":"Peb"},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.output_item.added","output_index":0,"item":{"id":"msg_tmp_f05ijtys49w","type":"message","status":"in_progress","role":"assistant","content":[]},"sequence_number":2}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":"bles"},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.content_part.added","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"part":{"type":"output_text","text":"","annotations":[],"logprobs":[]},"sequence_number":3}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":"
-        and"},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.output_text.delta","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"delta":"Sk","logprobs":[],"sequence_number":4}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":"
-        Sk"},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.output_text.delta","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"delta":"ipper","logprobs":[],"sequence_number":5}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":"ipper"},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.output_text.delta","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"delta":"
+        or","logprobs":[],"sequence_number":6}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.output_text.delta","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"delta":"
+        Sundance","logprobs":[],"sequence_number":7}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop","native_finish_reason":"stop","logprobs":null}],"system_fingerprint":"fp_07871e2ad8"}
+        data: {"type":"response.output_text.done","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"text":"Skipper
+        or Sundance","logprobs":[],"sequence_number":8}
 
 
-        data: {"id":"gen-1754441342-hIkMo7SMi0ZecQw3oR4d","provider":"OpenAI","model":"openai/gpt-4o","object":"chat.completion.chunk","created":1754441342,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"usage":{"prompt_tokens":17,"completion_tokens":6,"total_tokens":23,"cost":0.0001025,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0},"cost_details":{"upstream_inference_cost":null},"completion_tokens_details":{"reasoning_tokens":0}}}
+        data: {"type":"response.content_part.done","output_index":0,"item_id":"msg_tmp_f05ijtys49w","content_index":0,"part":{"type":"output_text","text":"Skipper
+        or Sundance","annotations":[],"logprobs":[]},"sequence_number":9}
+
+
+        data: {"type":"response.output_item.done","output_index":0,"item":{"id":"msg_tmp_f05ijtys49w","type":"message","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Skipper
+        or Sundance","annotations":[],"logprobs":[]}]},"sequence_number":10}
+
+
+        data: {"type":"response.completed","response":{"id":"gen-1785882264-Dc8eXAHSnjmKOswYtXdR","object":"response","created_at":1785882264,"model":"openai/gpt-4o","status":"completed","completed_at":1785882264,"output":[{"id":"msg_tmp_f05ijtys49w","type":"message","role":"assistant","status":"completed","content":[{"type":"output_text","text":"Skipper
+        or Sundance","annotations":[],"logprobs":[]}]}],"error":null,"incomplete_details":null,"tools":[],"tool_choice":"auto","parallel_tool_calls":true,"max_output_tokens":null,"temperature":1,"top_p":1,"presence_penalty":0,"frequency_penalty":0,"top_logprobs":0,"max_tool_calls":null,"metadata":{},"background":false,"previous_response_id":null,"service_tier":"auto","truncation":"disabled","store":false,"instructions":null,"text":{"format":{"type":"text"}},"reasoning":null,"safety_identifier":null,"prompt_cache_key":null,"prompt_cache_options":null,"usage":{"input_tokens":17,"input_tokens_details":{"cached_tokens":0},"output_tokens":4,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":21,"cost":0.0000825,"is_byok":false,"cost_details":{"upstream_inference_cost":0.0000825,"upstream_inference_input_cost":0.0000425,"upstream_inference_output_cost":0.00004}}},"sequence_number":11}
 
 
         data: [DONE]
@@ -221,7 +242,7 @@ interactions:
       Access-Control-Allow-Origin:
       - '*'
       CF-RAY:
-      - 96aa88386d55ffb8-SJC
+      - a260f8d6ee8ec8de-SJC
       Cache-Control:
       - no-cache
       Connection:
@@ -229,7 +250,7 @@ interactions:
       Content-Type:
       - text/event-stream
       Date:
-      - Wed, 06 Aug 2025 00:49:03 GMT
+      - Tue, 04 Aug 2026 22:24:24 GMT
       Permissions-Policy:
       - payment=(self "https://checkout.stripe.com" "https://connect-js.stripe.com"
         "https://js.stripe.com" "https://*.js.stripe.com" "https://hooks.stripe.com")
@@ -239,10 +260,16 @@ interactions:
       - cloudflare
       Transfer-Encoding:
       - chunked
-      Vary:
-      - Accept-Encoding
       X-Content-Type-Options:
       - nosniff
+      X-Generation-Id:
+      - gen-1785882264-Dc8eXAHSnjmKOswYtXdR
+      access-control-expose-headers:
+      - X-Generation-Id,X-Provider-Name,cf-ray
+      set-cookie:
+      - __cf_bm=2K2.PQRpVrdH1KuDVBXlyA1wgOten8QWZFuSkX.z5VU-1785882264.145855-1.0.1.1-9s9J2rMTaNbVuNpawe8MO.o4nrhLRXR1kqg6aM20uKVTS2yJ4Ko.zD_WfsvB4qPHrdst308EaabnyIrMs.MXPwj7SFz3zcJFTdud0T_1guyy88I_c3u_EbW78KDD_Bm6;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=openrouter.ai; Expires=Tue,
+        04 Aug 2026 22:54:24 GMT
     status:
       code: 200
       message: OK
