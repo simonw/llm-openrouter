@@ -37,9 +37,9 @@ llm models list
 ```
 You should see a list that looks something like this:
 ```
-OpenRouter: openrouter/openai/gpt-3.5-turbo
-OpenRouter: openrouter/anthropic/claude-sonnet-4
-OpenRouter: openrouter/meta-llama/llama-2-70b-chat
+OpenRouter: openrouter/qwen/qwen3.8-max
+OpenRouter: openrouter/anthropic/claude-sonnet-5
+OpenRouter: openrouter/meta/muse-spark-1.1
 ...
 ```
 The list of models from OpenRouter is cached for an hour. You can force a refresh using this command:
@@ -49,14 +49,14 @@ llm openrouter refresh
 
 To run a prompt against a model, pass its full model ID to the `-m` option, like this:
 ```bash
-llm -m openrouter/anthropic/claude-sonnet-4 "Five spooky names for a pet tarantula"
+llm -m openrouter/anthropic/claude-sonnet-5 "Five spooky names for a pet tarantula"
 ```
 Models use OpenRouter's Responses API by default. You can temporarily use the
 older Chat Completions API for a prompt with `-o chat_completions 1`.
 
 You can set a shorter alias for a model using the `llm aliases` command like so:
 ```bash
-llm aliases set claude openrouter/anthropic/claude-sonnet-4
+llm aliases set claude openrouter/anthropic/claude-sonnet-5
 ```
 Now you can prompt Claude using:
 ```bash
@@ -65,7 +65,7 @@ cat llm_openrouter.py | llm -m claude -s 'write some pytest tests for this'
 
 Images are supported too, for some models:
 ```bash
-llm -m openrouter/anthropic/claude-sonnet-4 'describe this image' -a https://static.simonwillison.net/static/2024/pelicans.jpg
+llm -m openrouter/anthropic/claude-sonnet-5 'describe this image' -a https://static.simonwillison.net/static/2024/pelicans.jpg
 llm -m openrouter/anthropic/claude-3-haiku 'extract text' -a page.png
 ```
 
@@ -126,7 +126,7 @@ Output:
 Most OpenRouter models support [tool calls](https://llm.datasette.io/en/stable/tools.html). You can try that out like so:
 
 ```bash
-llm -m openrouter/openai/gpt-5 \
+llm -m openrouter/openai/gpt-5.6-luna \
   -T llm_version -T llm_time \
   "What version of LLM and what time is it?" \
   --tools-debug
@@ -163,7 +163,7 @@ Some OpenRouter models such as [GPT-5](https://openrouter.ai/openai/gpt-5) suppo
 For example:
 
 ```bash
-llm -m openrouter/openai/gpt-5 \
+llm -m openrouter/openai/gpt-5.4-mini \
    'prove dogs exist' \
    -o reasoning_effort high
 ```
