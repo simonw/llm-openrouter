@@ -8,6 +8,7 @@ from llm.cli import cli
 from llm_openrouter import (
     OpenRouterAsyncResponses,
     OpenRouterResponses,
+    Shell,
     WebFetch,
     WebSearch,
 )
@@ -322,6 +323,37 @@ def test_web_fetch_server_tool(model_class):
         }
     ]
     assert WebFetch in model.supported_server_side_tools
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_shell_server_tool(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    tool = Shell(
+        engine="openrouter",
+        environment={"type": "container_auto"},
+        sleep_after_seconds=300,
+    )
+    response = model.prompt("run printf hello", tools=[tool])
+
+    kwargs = model._build_responses_kwargs(response.prompt, stream=True)
+
+    assert kwargs["tools"] == [
+        {
+            "type": "openrouter:shell",
+            "parameters": {
+                "engine": "openrouter",
+                "environment": {"type": "container_auto"},
+                "sleep_after_seconds": 300,
+            },
+        }
+    ]
+    assert Shell in model.supported_server_side_tools
 
 
 @pytest.mark.parametrize(

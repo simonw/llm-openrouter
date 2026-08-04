@@ -229,9 +229,62 @@ class WebFetch(llm.ServerSideTool):
         return spec
 
 
+class Shell(llm.ServerSideTool):
+    """Run commands in an OpenRouter-hosted sandbox."""
+
+    name = "shell"
+    _engines = frozenset({"auto", "openrouter"})
+    _environment_types = frozenset({"container_auto", "container_reference"})
+
+    def __init__(
+        self,
+        engine: Literal["auto", "openrouter"] | None = None,
+        environment: dict | None = None,
+        sleep_after_seconds: int | None = None,
+    ):
+        super().__init__()
+        if engine is not None and engine not in self._engines:
+            raise ValueError("engine must be auto or openrouter")
+        if environment is not None:
+            if not isinstance(environment, dict):
+                raise TypeError("environment must be a dictionary")
+            environment = dict(environment)
+            environment_type = environment.get("type")
+            if environment_type not in self._environment_types:
+                raise ValueError(
+                    "environment type must be container_auto or container_reference"
+                )
+            if environment_type == "container_reference":
+                container_id = environment.get("container_id")
+                if not isinstance(container_id, str) or not container_id:
+                    raise ValueError(
+                        "container_reference environment requires a container_id"
+                    )
+        _validate_integer(
+            "sleep_after_seconds",
+            sleep_after_seconds,
+            minimum=0,
+            maximum=2_592_000,
+        )
+        self.engine = engine
+        self.environment = environment
+        self.sleep_after_seconds = sleep_after_seconds
+
+    def tool_spec(self, model):
+        parameters = {}
+        for key in ("engine", "environment", "sleep_after_seconds"):
+            value = getattr(self, key)
+            if value is not None:
+                parameters[key] = value
+        spec = {"type": "openrouter:shell"}
+        if parameters:
+            spec["parameters"] = parameters
+        return spec
+
+
 def _response_item_dict(item):
     if hasattr(item, "model_dump"):
-        return item.model_dump(mode="json", exclude_none=True)
+        return item.model_dump(mode="json", exclude_none=True, warnings=False)
     if isinstance(item, dict):
         return dict(item)
     return {
@@ -321,9 +374,87 @@ class _mixin:
             return events
 
         item_type = getattr(item, "type", None)
-        if item_type not in ("openrouter:web_search", "openrouter:web_fetch"):
+        if item_type not in (
+            "openrouter:web_search",
+            "openrouter:web_fetch",
+            "openrouter:shell",
+            "shell_call",
+            "shell_call_output",
+        ):
             return []
         response_item = _response_item_dict(item)
+        if item_type == "shell_call":
+            call_id = response_item.get("call_id") or response_item.get("id")
+            return [
+                StreamEvent(
+                    type="tool_call_name",
+                    chunk="shell",
+                    tool_call_id=call_id,
+                    server_executed=True,
+                    provider_metadata={
+                        "openrouter": {"response_item": response_item}
+                    },
+                    message_index=message_index,
+                ),
+                StreamEvent(
+                    type="tool_call_args",
+                    chunk=json.dumps(response_item.get("action") or {}),
+                    tool_call_id=call_id,
+                    server_executed=True,
+                    message_index=message_index,
+                ),
+            ]
+        if item_type == "shell_call_output":
+            call_id = response_item.get("call_id") or response_item.get("id")
+            return [
+                StreamEvent(
+                    type="tool_result",
+                    chunk=json.dumps(response_item.get("output") or []),
+                    tool_call_id=call_id,
+                    server_executed=True,
+                    tool_name="shell",
+                    provider_metadata={
+                        "openrouter": {"response_item": response_item}
+                    },
+                    message_index=message_index,
+                )
+            ]
+        if item_type == "openrouter:shell":
+            call_id = response_item.get("call_id") or response_item.get("id")
+            action = response_item.get("action") or {}
+            output = response_item.get("output")
+            result = (
+                json.dumps(output)
+                if output is not None
+                else (response_item.get("status") or "completed")
+            )
+            return [
+                StreamEvent(
+                    type="tool_call_name",
+                    chunk="shell",
+                    tool_call_id=call_id,
+                    server_executed=True,
+                    provider_metadata={
+                        "openrouter": {"response_item": response_item}
+                    },
+                    message_index=message_index,
+                ),
+                StreamEvent(
+                    type="tool_call_args",
+                    chunk=json.dumps(action),
+                    tool_call_id=call_id,
+                    server_executed=True,
+                    message_index=message_index,
+                ),
+                StreamEvent(
+                    type="tool_result",
+                    chunk=result,
+                    tool_call_id=call_id,
+                    server_executed=True,
+                    tool_name="shell",
+                    message_index=message_index,
+                ),
+            ]
         if item_type == "openrouter:web_fetch":
             item_id = response_item.get("id")
             result = {
@@ -411,7 +542,7 @@ class OpenRouterResponses(_mixin, Responses):
 
     @property
     def supported_server_side_tools(self):
-        return (WebSearch, WebFetch, llm.ServerSideTool)
+        return (WebSearch, WebFetch, Shell, llm.ServerSideTool)
 
     def execute(self, prompt, stream, response, conversation=None, key=None):
         if getattr(prompt.options, "chat_completions", None):
@@ -434,7 +565,7 @@ class OpenRouterAsyncResponses(_mixin, AsyncResponses):
 
     @property
     def supported_server_side_tools(self):
-        return (WebSearch, WebFetch, llm.ServerSideTool)
+        return (WebSearch, WebFetch, Shell, llm.ServerSideTool)
 
     async def execute(self, prompt, stream, response, conversation=None, key=None):
         if getattr(prompt.options, "chat_completions", None):

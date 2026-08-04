@@ -215,6 +215,22 @@ llm -m openrouter/openai/gpt-5.2 \
 `WebFetch` accepts `engine`, `max_uses`, `max_content_tokens`,
 `allowed_domains` and `blocked_domains` options.
 
+### Shell
+
+Use OpenRouter's
+[`openrouter:shell` server tool](https://openrouter.ai/docs/guides/features/server-tools/shell)
+to run commands in a hosted sandbox:
+
+```bash
+llm -m openrouter/openai/gpt-5.2 \
+  -T 'Shell(engine="openrouter")' \
+  'Run: printf "llm-openrouter-shell-ok\\n"'
+```
+
+`Shell` accepts `engine`, `environment` and `sleep_after_seconds` options.
+Commands run in an isolated container hosted by OpenRouter, not on your local
+machine.
+
 ### Listing models
 
 The `llm models -q openrouter` command will display all available models, or you can use this command to see more detailed JSON:
