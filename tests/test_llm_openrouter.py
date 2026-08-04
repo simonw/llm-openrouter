@@ -5,7 +5,12 @@ import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
-from llm_openrouter import OpenRouterAsyncResponses, OpenRouterResponses, WebSearch
+from llm_openrouter import (
+    OpenRouterAsyncResponses,
+    OpenRouterResponses,
+    WebFetch,
+    WebSearch,
+)
 
 TINY_PNG = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xa6\x00\x00\x01\x1a"
@@ -284,6 +289,39 @@ def test_web_search_server_tool(model_class):
         }
     ]
     assert WebSearch in model.supported_server_side_tools
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_web_fetch_server_tool(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    tool = WebFetch(
+        engine="openrouter",
+        max_uses=1,
+        max_content_tokens=2_000,
+        allowed_domains=["example.com"],
+    )
+    response = model.prompt("fetch https://example.com", tools=[tool])
+
+    kwargs = model._build_responses_kwargs(response.prompt, stream=True)
+
+    assert kwargs["tools"] == [
+        {
+            "type": "openrouter:web_fetch",
+            "parameters": {
+                "engine": "openrouter",
+                "max_uses": 1,
+                "max_content_tokens": 2_000,
+                "allowed_domains": ["example.com"],
+            },
+        }
+    ]
+    assert WebFetch in model.supported_server_side_tools
 
 
 @pytest.mark.parametrize(

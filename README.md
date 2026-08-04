@@ -200,6 +200,21 @@ whether to search.
 Consult the OpenRouter documentation for current configuration options and
 pricing.
 
+### Web fetch
+
+Use OpenRouter's
+[`openrouter:web_fetch` server tool](https://openrouter.ai/docs/guides/features/server-tools/web-fetch)
+to fetch and extract the contents of a specific URL:
+
+```bash
+llm -m openrouter/openai/gpt-5.2 \
+  -T 'WebFetch(max_uses=1)' \
+  'Fetch https://example.com and report its heading'
+```
+
+`WebFetch` accepts `engine`, `max_uses`, `max_content_tokens`,
+`allowed_domains` and `blocked_domains` options.
+
 ### Listing models
 
 The `llm models -q openrouter` command will display all available models, or you can use this command to see more detailed JSON:

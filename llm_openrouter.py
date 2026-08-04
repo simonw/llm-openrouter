@@ -81,6 +81,27 @@ def build_openrouter_options(base_options):
     return Options
 
 
+def _validate_integer(name, value, minimum, maximum=None):
+    if value is None:
+        return
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be an integer")
+    if value < minimum or (maximum is not None and value > maximum):
+        if maximum is None:
+            raise ValueError(f"{name} must be at least {minimum}")
+        raise ValueError(f"{name} must be between {minimum} and {maximum}")
+
+
+def _validate_domains(name, domains):
+    if domains is None:
+        return None
+    if not isinstance(domains, list):
+        raise TypeError(f"{name} must be a list")
+    if any(not isinstance(domain, str) or not domain for domain in domains):
+        raise TypeError(f"{name} entries must be non-empty strings")
+    return list(domains)
+
+
 class WebSearch(llm.ServerSideTool):
     """Search the web using OpenRouter's hosted web search tool."""
 
@@ -115,10 +136,10 @@ class WebSearch(llm.ServerSideTool):
             search_context_size not in self._search_context_sizes
         ):
             raise ValueError("search_context_size must be one of: low, medium or high")
-        self._validate_integer("max_results", max_results, minimum=1, maximum=25)
-        self._validate_integer("max_uses", max_uses, minimum=1)
-        self._validate_integer("max_total_results", max_total_results, minimum=1)
-        self._validate_integer(
+        _validate_integer("max_results", max_results, minimum=1, maximum=25)
+        _validate_integer("max_uses", max_uses, minimum=1)
+        _validate_integer("max_total_results", max_total_results, minimum=1)
+        _validate_integer(
             "max_characters", max_characters, minimum=1, maximum=100_000
         )
         if user_location is not None and not isinstance(user_location, dict):
@@ -130,33 +151,10 @@ class WebSearch(llm.ServerSideTool):
         self.search_context_size = search_context_size
         self.max_characters = max_characters
         self.user_location = dict(user_location) if user_location is not None else None
-        self.allowed_domains = self._validate_domains(
-            "allowed_domains", allowed_domains
-        )
-        self.excluded_domains = self._validate_domains(
+        self.allowed_domains = _validate_domains("allowed_domains", allowed_domains)
+        self.excluded_domains = _validate_domains(
             "excluded_domains", excluded_domains
         )
-
-    @staticmethod
-    def _validate_integer(name, value, minimum, maximum=None):
-        if value is None:
-            return
-        if isinstance(value, bool) or not isinstance(value, int):
-            raise TypeError(f"{name} must be an integer")
-        if value < minimum or (maximum is not None and value > maximum):
-            if maximum is None:
-                raise ValueError(f"{name} must be at least {minimum}")
-            raise ValueError(f"{name} must be between {minimum} and {maximum}")
-
-    @staticmethod
-    def _validate_domains(name, domains):
-        if domains is None:
-            return None
-        if not isinstance(domains, list):
-            raise TypeError(f"{name} must be a list")
-        if any(not isinstance(domain, str) or not domain for domain in domains):
-            raise TypeError(f"{name} entries must be non-empty strings")
-        return list(domains)
 
     def tool_spec(self, model):
         parameters = {}
@@ -175,6 +173,57 @@ class WebSearch(llm.ServerSideTool):
             if value is not None:
                 parameters[key] = value
         spec = {"type": "openrouter:web_search"}
+        if parameters:
+            spec["parameters"] = parameters
+        return spec
+
+
+class WebFetch(llm.ServerSideTool):
+    """Fetch and extract web page content using OpenRouter."""
+
+    name = "web_fetch"
+    _engines = frozenset(
+        {"auto", "native", "exa", "openrouter", "firecrawl", "parallel"}
+    )
+
+    def __init__(
+        self,
+        engine: Literal[
+            "auto", "native", "exa", "openrouter", "firecrawl", "parallel"
+        ]
+        | None = None,
+        max_uses: int | None = None,
+        max_content_tokens: int | None = None,
+        allowed_domains: list[str] | None = None,
+        blocked_domains: list[str] | None = None,
+    ):
+        super().__init__()
+        if engine is not None and engine not in self._engines:
+            raise ValueError(
+                "engine must be one of: auto, native, exa, openrouter, firecrawl "
+                "or parallel"
+            )
+        _validate_integer("max_uses", max_uses, minimum=1)
+        _validate_integer("max_content_tokens", max_content_tokens, minimum=1)
+        self.engine = engine
+        self.max_uses = max_uses
+        self.max_content_tokens = max_content_tokens
+        self.allowed_domains = _validate_domains("allowed_domains", allowed_domains)
+        self.blocked_domains = _validate_domains("blocked_domains", blocked_domains)
+
+    def tool_spec(self, model):
+        parameters = {}
+        for key in (
+            "engine",
+            "max_uses",
+            "max_content_tokens",
+            "allowed_domains",
+            "blocked_domains",
+        ):
+            value = getattr(self, key)
+            if value is not None:
+                parameters[key] = value
+        spec = {"type": "openrouter:web_fetch"}
         if parameters:
             spec["parameters"] = parameters
         return spec
@@ -268,10 +317,47 @@ class _mixin:
 
     def _server_tool_events(self, item, message_index):
         events = super()._server_tool_events(item, message_index)
-        if events or getattr(item, "type", None) != "openrouter:web_search":
+        if events:
             return events
 
+        item_type = getattr(item, "type", None)
+        if item_type not in ("openrouter:web_search", "openrouter:web_fetch"):
+            return []
         response_item = _response_item_dict(item)
+        if item_type == "openrouter:web_fetch":
+            item_id = response_item.get("id")
+            result = {
+                key: value
+                for key, value in response_item.items()
+                if key not in ("type", "id")
+            }
+            return [
+                StreamEvent(
+                    type="tool_call_name",
+                    chunk="web_fetch",
+                    tool_call_id=item_id,
+                    server_executed=True,
+                    provider_metadata={
+                        "openrouter": {"response_item": response_item}
+                    },
+                    message_index=message_index,
+                ),
+                StreamEvent(
+                    type="tool_call_args",
+                    chunk=json.dumps({"url": response_item.get("url")}),
+                    tool_call_id=item_id,
+                    server_executed=True,
+                    message_index=message_index,
+                ),
+                StreamEvent(
+                    type="tool_result",
+                    chunk=json.dumps(result),
+                    tool_call_id=item_id,
+                    server_executed=True,
+                    tool_name="web_fetch",
+                    message_index=message_index,
+                ),
+            ]
         item_id = response_item.get("id")
         action = response_item.get("action") or {}
         return [
@@ -325,7 +411,7 @@ class OpenRouterResponses(_mixin, Responses):
 
     @property
     def supported_server_side_tools(self):
-        return (WebSearch, llm.ServerSideTool)
+        return (WebSearch, WebFetch, llm.ServerSideTool)
 
     def execute(self, prompt, stream, response, conversation=None, key=None):
         if getattr(prompt.options, "chat_completions", None):
@@ -348,7 +434,7 @@ class OpenRouterAsyncResponses(_mixin, AsyncResponses):
 
     @property
     def supported_server_side_tools(self):
-        return (WebSearch, llm.ServerSideTool)
+        return (WebSearch, WebFetch, llm.ServerSideTool)
 
     async def execute(self, prompt, stream, response, conversation=None, key=None):
         if getattr(prompt.options, "chat_completions", None):
