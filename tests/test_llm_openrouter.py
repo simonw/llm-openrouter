@@ -1,10 +1,12 @@
 from copy import deepcopy
+from types import SimpleNamespace
 
 import llm
 import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
+from llm.parts import Message, TextPart, ToolCallPart, ToolResultPart
 from llm_openrouter import (
     OpenRouterAsyncResponses,
     OpenRouterResponses,
@@ -354,6 +356,231 @@ def test_shell_server_tool(model_class):
         }
     ]
     assert Shell in model.supported_server_side_tools
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_server_tool_response_items_are_replayed_in_order(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    initial_search_item = {
+        "id": "ws_1",
+        "type": "openrouter:web_search",
+        "status": "in_progress",
+        "action": {"type": "search", "query": "pelicans"},
+    }
+    final_search_item = {
+        **initial_search_item,
+        "status": "completed",
+    }
+    messages = [
+        Message(role="system", parts=[TextPart("Be concise")]),
+        Message(role="user", parts=[TextPart("Research pelicans")]),
+        Message(
+            role="assistant",
+            parts=[
+                TextPart("I'll search first."),
+                ToolCallPart(
+                    name="web_search",
+                    arguments=initial_search_item["action"],
+                    tool_call_id="ws_1",
+                    server_executed=True,
+                    provider_metadata={
+                        "openrouter": {"response_item": initial_search_item}
+                    },
+                ),
+                TextPart("Search finished. "),
+                ToolResultPart(
+                    name="web_search",
+                    output="completed",
+                    tool_call_id="ws_1",
+                    server_executed=True,
+                    provider_metadata={
+                        "openrouter": {"response_item": final_search_item}
+                    },
+                ),
+                TextPart("I'll record it."),
+                ToolCallPart(
+                    name="record_fact",
+                    arguments={"fact": "Pelicans have large bills"},
+                    tool_call_id="call_1",
+                ),
+            ],
+        ),
+        Message(
+            role="tool",
+            parts=[
+                ToolResultPart(
+                    name="record_fact",
+                    output="stored",
+                    tool_call_id="call_1",
+                )
+            ],
+        ),
+        Message(role="assistant", parts=[TextPart("Research complete.")]),
+        Message(role="user", parts=[TextPart("What did you find?")]),
+    ]
+    messages = [Message.from_dict(message.to_dict()) for message in messages]
+    response = model.prompt(messages=messages)
+
+    items, instructions = model._build_responses_input(response.prompt)
+
+    assert instructions == "Be concise"
+    assert items == [
+        {"role": "user", "content": "Research pelicans"},
+        {"role": "assistant", "content": "I'll search first."},
+        final_search_item,
+        {"role": "assistant", "content": "Search finished. I'll record it."},
+        {
+            "type": "function_call",
+            "call_id": "call_1",
+            "name": "record_fact",
+            "arguments": '{"fact": "Pelicans have large bills"}',
+        },
+        {
+            "type": "function_call_output",
+            "call_id": "call_1",
+            "output": "stored",
+        },
+        {"role": "assistant", "content": "Research complete."},
+        {"role": "user", "content": "What did you find?"},
+    ]
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_shell_call_and_output_are_both_replayed(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    shell_call = {
+        "id": "sh_1",
+        "type": "shell_call",
+        "call_id": "shell_call_1",
+        "action": {"commands": ["printf hello"]},
+    }
+    shell_output = {
+        "id": "sho_1",
+        "type": "shell_call_output",
+        "call_id": "shell_call_1",
+        "output": [{"stdout": "hello", "stderr": "", "exit_code": 0}],
+    }
+    messages = [
+        Message(role="user", parts=[TextPart("Run a command")]),
+        Message(
+            role="assistant",
+            parts=[
+                ToolCallPart(
+                    name="shell",
+                    arguments=shell_call["action"],
+                    tool_call_id="shell_call_1",
+                    server_executed=True,
+                    provider_metadata={"openrouter": {"response_item": shell_call}},
+                ),
+                ToolResultPart(
+                    name="shell",
+                    output="hello",
+                    tool_call_id="shell_call_1",
+                    server_executed=True,
+                    provider_metadata={"openrouter": {"response_item": shell_output}},
+                ),
+            ],
+        ),
+        Message(role="user", parts=[TextPart("What was printed?")]),
+    ]
+    response = model.prompt(messages=messages)
+
+    items, _ = model._build_responses_input(response.prompt)
+
+    assert items == [
+        {"role": "user", "content": "Run a command"},
+        shell_call,
+        shell_output,
+        {"role": "user", "content": "What was printed?"},
+    ]
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_streamed_server_tool_metadata_is_refreshed(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    initial_item = SimpleNamespace(
+        id="wf_1",
+        type="openrouter:web_fetch",
+        status="in_progress",
+        url="https://example.com/",
+        content="partial",
+    )
+    final_item = SimpleNamespace(
+        id="wf_1",
+        type="openrouter:web_fetch",
+        status="completed",
+        url="https://example.com/",
+        content="complete",
+    )
+    events = model._server_tool_events(initial_item, message_index=0)
+
+    model._refresh_server_tool_events([final_item], {"wf_1": events})
+
+    metadata_events = [event for event in events if event.provider_metadata]
+    assert len(metadata_events) == 1
+    assert metadata_events[0].provider_metadata == {
+        "openrouter": {
+            "response_item": {
+                "id": "wf_1",
+                "type": "openrouter:web_fetch",
+                "status": "completed",
+                "url": "https://example.com/",
+                "content": "complete",
+            }
+        }
+    }
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_native_server_tool_response_item_is_preserved(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    item = SimpleNamespace(
+        id="ws_native_1",
+        type="web_search_call",
+        status="completed",
+        action={"type": "search", "query": "pelicans"},
+        results=[],
+    )
+
+    events = model._server_tool_events(item, message_index=0)
+
+    metadata_events = [event for event in events if event.provider_metadata]
+    assert len(metadata_events) == 1
+    assert metadata_events[0].provider_metadata == {
+        "openrouter": {
+            "response_item": {
+                "id": "ws_native_1",
+                "type": "web_search_call",
+                "status": "completed",
+                "action": {"type": "search", "query": "pelicans"},
+                "results": [],
+            }
+        }
+    }
 
 
 @pytest.mark.parametrize(

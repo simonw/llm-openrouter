@@ -231,6 +231,10 @@ llm -m openrouter/openai/gpt-5.2 \
 Commands run in an isolated container hosted by OpenRouter, not on your local
 machine.
 
+Server-tool response items are preserved in subsequent Responses API requests,
+including conversations continued using `llm -c`, so tool chains can combine
+hosted server tools with local LLM tools without losing prior context.
+
 ### Listing models
 
 The `llm models -q openrouter` command will display all available models, or you can use this command to see more detailed JSON:

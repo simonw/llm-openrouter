@@ -1,5 +1,6 @@
 import json
 import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Literal, Optional, Union
 
@@ -294,6 +295,37 @@ def _response_item_dict(item):
     }
 
 
+def _openrouter_response_item(part):
+    if not getattr(part, "server_executed", False):
+        return None
+    provider_metadata = getattr(part, "provider_metadata", None) or {}
+    openrouter_metadata = provider_metadata.get("openrouter") or {}
+    response_item = openrouter_metadata.get("response_item")
+    if response_item is None:
+        return None
+    return response_item
+
+
+def _response_item_key(item):
+    item_type = item.get("type")
+    if item_type is None:
+        return None
+    if item.get("id") is not None:
+        return (item_type, "id", item["id"])
+    if item.get("call_id") is not None:
+        return (item_type, "call_id", item["call_id"])
+    return None
+
+
+class _PromptMessagesProxy:
+    def __init__(self, prompt, messages):
+        self._prompt = prompt
+        self.messages = messages
+
+    def __getattr__(self, name):
+        return getattr(self._prompt, name)
+
+
 class _mixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -368,9 +400,79 @@ class _mixin:
             kwargs["extra_body"] = extra_body
         return kwargs
 
+    def _build_responses_input(self, prompt, image_detail=None):
+        """Replay raw OpenRouter server-tool items in conversation history."""
+        from llm.parts import Message
+
+        base_builder = super()._build_responses_input
+        messages = prompt.messages
+        if not any(
+            _openrouter_response_item(part) is not None
+            for message in messages
+            for part in message.parts
+        ):
+            return base_builder(prompt, image_detail=image_detail)
+
+        items = []
+        instructions = None
+        response_item_indexes = {}
+
+        def append_ordinary_parts(message, parts):
+            # Delegate ordinary text, attachments and local tools back to LLM
+            # in segments so raw server-tool items retain their exact position.
+            nonlocal instructions
+            if not parts:
+                return
+            segment = Message(
+                role=message.role,
+                parts=parts,
+                provider_metadata=message.provider_metadata,
+            )
+            segment_items, segment_instructions = base_builder(
+                _PromptMessagesProxy(prompt, [segment]),
+                image_detail=image_detail,
+            )
+            items.extend(segment_items)
+            if segment_instructions is not None:
+                instructions = segment_instructions
+
+        for message in messages:
+            ordinary_parts = []
+            for part in message.parts:
+                response_item = _openrouter_response_item(part)
+                if response_item is None:
+                    ordinary_parts.append(part)
+                    continue
+                response_item = deepcopy(_response_item_dict(response_item))
+                response_item_key = _response_item_key(response_item)
+
+                if (
+                    response_item_key is not None
+                    and response_item_key in response_item_indexes
+                ):
+                    items[response_item_indexes[response_item_key]] = response_item
+                    continue
+
+                if ordinary_parts:
+                    append_ordinary_parts(message, ordinary_parts)
+                    ordinary_parts = []
+
+                if response_item_key is not None:
+                    response_item_indexes[response_item_key] = len(items)
+                items.append(response_item)
+
+            append_ordinary_parts(message, ordinary_parts)
+
+        return items, instructions
+
     def _server_tool_events(self, item, message_index):
         events = super()._server_tool_events(item, message_index)
         if events:
+            response_item = _response_item_dict(item)
+            events[0].provider_metadata = {
+                **(events[0].provider_metadata or {}),
+                "openrouter": {"response_item": response_item},
+            }
             return events
 
         item_type = getattr(item, "type", None)
@@ -518,6 +620,20 @@ class _mixin:
                 message_index=message_index,
             ),
         ]
+
+    def _refresh_server_tool_events(self, output, done_events):
+        super()._refresh_server_tool_events(output, done_events)
+        for item in output or []:
+            item_id = getattr(item, "id", None)
+            prior_events = done_events.get(item_id)
+            if not prior_events:
+                continue
+            response_item = _response_item_dict(item)
+            for event in prior_events:
+                provider_metadata = event.provider_metadata or {}
+                openrouter_metadata = provider_metadata.get("openrouter") or {}
+                if "response_item" in openrouter_metadata:
+                    openrouter_metadata["response_item"] = deepcopy(response_item)
 
 
 class OpenRouterChat(_mixin, Chat):
