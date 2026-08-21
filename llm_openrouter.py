@@ -58,6 +58,10 @@ def build_openrouter_options(base_options):
             ),
             default=None,
         )
+        reasoning_summary: Optional[Literal["auto", "concise", "detailed"]] = Field(
+            description="Explicitly request a summary of the model's reasoning",
+            default=None,
+        )
         reasoning_max_tokens: Optional[int] = Field(
             description="Specific token limit to control reasoning effort",
             default=None,
@@ -355,6 +359,7 @@ class _mixin:
 
     def _build_responses_kwargs(self, prompt, stream):
         reasoning_effort = prompt.options.reasoning_effort
+        reasoning_summary = getattr(prompt.options, "reasoning_summary", None)
         reasoning_max_tokens = prompt.options.reasoning_max_tokens
         reasoning_enabled = prompt.options.reasoning_enabled
         provider = prompt.options.provider
@@ -362,6 +367,7 @@ class _mixin:
         kwargs = super()._build_responses_kwargs(prompt, stream)
         for key in (
             "provider",
+            "reasoning_summary",
             "reasoning_max_tokens",
             "reasoning_enabled",
         ):
@@ -380,6 +386,10 @@ class _mixin:
             )
 
         reasoning = dict(kwargs.get("reasoning") or {})
+        if reasoning_summary is None or getattr(prompt, "hide_reasoning", False):
+            reasoning.pop("summary", None)
+        else:
+            reasoning["summary"] = reasoning_summary
         if reasoning_effort:
             reasoning["effort"] = reasoning_effort
         if reasoning_max_tokens is not None:
@@ -388,6 +398,8 @@ class _mixin:
             reasoning["enabled"] = reasoning_enabled
         if reasoning:
             kwargs["reasoning"] = reasoning
+        else:
+            kwargs.pop("reasoning", None)
 
         extra_body = dict(kwargs.pop("extra_body", {}) or {})
         for key in ("frequency_penalty", "presence_penalty"):

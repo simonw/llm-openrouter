@@ -157,6 +157,8 @@ Some OpenRouter models such as [GPT-5](https://openrouter.ai/openai/gpt-5) suppo
 
 - `-o reasoning_effort none|minimal|low|medium|high|xhigh|max` - control
   reasoning effort (supported values vary by model)
+- `-o reasoning_summary auto|concise|detailed` - explicitly request a reasoning
+  summary (none is requested by default)
 - `-o reasoning_max_tokens 2048` - an alternative way of specifying effort for some models
 - `-o reasoning_enabled true` - use this to enable reasoning without setting an effort via one of the other two options
 

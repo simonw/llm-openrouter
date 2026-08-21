@@ -254,7 +254,6 @@ def test_responses_kwargs(model_class):
 
     assert kwargs == {
         "reasoning": {
-            "summary": "auto",
             "effort": "high",
             "max_tokens": 512,
             "enabled": True,
@@ -265,6 +264,44 @@ def test_responses_kwargs(model_class):
             "provider": {"order": ["OpenAI"]},
         },
     }
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_reasoning_summary_is_only_sent_when_explicit(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+        reasoning=True,
+    )
+
+    implicit_response = model.prompt("hello")
+    implicit_kwargs = model._finalize_responses_kwargs(
+        implicit_response.prompt, stream=True
+    )
+    assert "reasoning" not in implicit_kwargs
+    assert implicit_kwargs["include"] == ["reasoning.encrypted_content"]
+
+    explicit_response = model.prompt(
+        "hello", options={"reasoning_summary": "concise"}
+    )
+    explicit_kwargs = model._finalize_responses_kwargs(
+        explicit_response.prompt, stream=True
+    )
+    assert explicit_kwargs["reasoning"] == {"summary": "concise"}
+    assert explicit_kwargs["include"] == ["reasoning.encrypted_content"]
+
+    hidden_response = model.prompt(
+        "hello",
+        options={"reasoning_summary": "concise"},
+        hide_reasoning=True,
+    )
+    hidden_kwargs = model._finalize_responses_kwargs(
+        hidden_response.prompt, stream=True
+    )
+    assert "reasoning" not in hidden_kwargs
 
 
 @pytest.mark.parametrize(
