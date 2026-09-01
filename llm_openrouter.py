@@ -1,6 +1,7 @@
 import json
 import time
 from copy import deepcopy
+from functools import cache
 from pathlib import Path
 from typing import Literal, Optional, Union
 
@@ -45,6 +46,7 @@ def has_parameter(model_definition, parameter):
         return False
 
 
+@cache
 def build_openrouter_options(base_options):
     class Options(base_options):
         provider: Optional[Union[dict, str]] = Field(

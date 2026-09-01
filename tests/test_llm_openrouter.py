@@ -13,6 +13,7 @@ from llm_openrouter import (
     Shell,
     WebFetch,
     WebSearch,
+    build_openrouter_options,
 )
 
 TINY_PNG = (
@@ -24,6 +25,12 @@ TINY_PNG = (
     b"\xd4\x17\x91\xc6\x95\x05\x15\x0f\x9f\xc5\t\x9f\xa4\x00\x00\x00\x00IEND\xaeB`"
     b"\x82"
 )
+
+
+def test_build_openrouter_options_is_cached_by_base_class():
+    options = build_openrouter_options(llm.Options)
+
+    assert build_openrouter_options(llm.Options) is options
 
 
 def response_snapshot(response):
