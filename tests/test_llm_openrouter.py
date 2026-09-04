@@ -33,6 +33,49 @@ def test_build_openrouter_options_is_cached_by_base_class():
     assert build_openrouter_options(llm.Options) is options
 
 
+@pytest.mark.parametrize("model_class", (OpenRouterResponses, OpenRouterAsyncResponses))
+def test_responses_usage_includes_cost_details(model_class):
+    model = model_class(model_id="openrouter/test/model")
+    response = SimpleNamespace(token_details=None)
+
+    def set_usage(*, input=None, output=None, details=None):
+        response.input_tokens = input
+        response.output_tokens = output
+        response.token_details = details
+
+    response.set_usage = set_usage
+    model._set_usage_responses(
+        response,
+        {
+            "input_tokens": 17,
+            "input_tokens_details": {"cached_tokens": 0},
+            "output_tokens": 4,
+            "output_tokens_details": {"reasoning_tokens": 0},
+            "total_tokens": 21,
+            "cost": 0.0000825,
+            "cost_details": {
+                "upstream_inference_cost": 0.0000825,
+                "upstream_inference_input_cost": 0.0000425,
+                "upstream_inference_output_cost": 0.00004,
+            },
+            "is_byok": True,
+        },
+    )
+
+    assert response.input_tokens == 17
+    assert response.output_tokens == 4
+    assert response.token_details == {
+        "input_tokens_details": {"cached_tokens": 0},
+        "output_tokens_details": {"reasoning_tokens": 0},
+        "cost": 0.0000825,
+        "cost_details": {
+            "upstream_inference_cost": 0.0000825,
+            "upstream_inference_input_cost": 0.0000425,
+            "upstream_inference_output_cost": 0.00004,
+        },
+    }
+
+
 def response_snapshot(response):
     output = deepcopy(response.response_json["output"])
     for item in output:

@@ -414,6 +414,21 @@ class _mixin:
             kwargs["extra_body"] = extra_body
         return kwargs
 
+    def _set_usage_responses(self, response, usage):
+        super()._set_usage_responses(response, usage)
+        if not usage:
+            return
+        cost_details = {
+            key: usage[key]
+            for key in ("cost", "cost_details")
+            if usage.get(key) is not None
+        }
+        if cost_details:
+            response.token_details = {
+                **(response.token_details or {}),
+                **cost_details,
+            }
+
     def _build_responses_input(self, prompt, image_detail=None):
         """Replay raw OpenRouter server-tool items in conversation history."""
         from llm.parts import Message
