@@ -869,7 +869,10 @@ def register_commands(cli):
 
 def format_price(key, price_str):
     """Format a price value with appropriate scaling and no trailing zeros."""
-    price = float(price_str)
+    try:
+        price = float(price_str)
+    except (TypeError, ValueError):
+        return None
 
     if price == 0:
         return None
