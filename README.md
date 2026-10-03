@@ -170,6 +170,27 @@ llm -m openrouter/openai/gpt-5.4-mini \
    -o reasoning_effort high
 ```
 
+### Fallback models
+
+Use `-o models` with a JSON array of OpenRouter model IDs to configure
+[fallback models](https://openrouter.ai/docs/guides/routing/model-fallbacks):
+
+```bash
+llm -m openrouter/openai/gpt-4o 'Two names for a pet pelican' \
+  -o models '["anthropic/claude-sonnet-4", "openai/gpt-4.1-mini"]'
+```
+
+OpenRouter tries the primary model selected with `-m` first, then the listed
+models in order. Use OpenRouter API model IDs in the list. Model IDs, aliases
+and variant suffixes are passed through unchanged. The option works with the
+default Responses API and with `-o chat_completions 1`, including async calls.
+OpenRouter handles fallback routing on the server.
+
+Python callers can pass the same list using
+`model.prompt("Hello", models=["anthropic/claude-sonnet-4"])`.
+Omitting the option or passing an empty list disables fallbacks for that
+request. Invalid JSON and empty model IDs are rejected before sending it.
+
 ### Provider routing
 
 OpenRouter offers [comprehensive options](https://openrouter.ai/docs/features/provider-routing) for controlling which underlying provider your request is routed to.

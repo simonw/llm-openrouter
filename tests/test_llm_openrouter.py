@@ -1,20 +1,28 @@
+import asyncio
+import json
 from copy import deepcopy
 from types import SimpleNamespace
 
+import httpx
 import llm
+import openai
 import pytest
 from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
 from llm.parts import Message, TextPart, ToolCallPart, ToolResultPart
 from llm_openrouter import (
+    OpenRouterAsyncChat,
     OpenRouterAsyncResponses,
+    OpenRouterChat,
     OpenRouterResponses,
     Shell,
     WebFetch,
     WebSearch,
+    _mixin,
     build_openrouter_options,
 )
+from pydantic import ValidationError
 
 TINY_PNG = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xa6\x00\x00\x01\x1a"
@@ -33,6 +41,231 @@ def test_build_openrouter_options_is_cached_by_base_class():
     assert build_openrouter_options(llm.Options) is options
 
 
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        OpenRouterChat,
+        OpenRouterAsyncChat,
+        OpenRouterResponses,
+        OpenRouterAsyncResponses,
+    ),
+)
+@pytest.mark.parametrize(
+    "models",
+    (
+        ["provider/first:free", "openrouter/auto"],
+        '["provider/first:free", "openrouter/auto"]',
+    ),
+)
+def test_fallback_models_and_provider_options(model_class, models):
+    model = model_class("openrouter/test/model", model_name="test/model")
+    response = model.prompt(
+        "hello",
+        models=models,
+        provider='{"order": ["Test"]}',
+        reasoning_effort="high",
+        frequency_penalty=0.25,
+        presence_penalty=0.5,
+    )
+    if isinstance(model, (OpenRouterResponses, OpenRouterAsyncResponses)):
+        kwargs = model._build_responses_kwargs(response.prompt, stream=False)
+        assert kwargs["reasoning"]["effort"] == "high"
+        assert kwargs["extra_body"]["frequency_penalty"] == 0.25
+        assert kwargs["extra_body"]["presence_penalty"] == 0.5
+    else:
+        kwargs = model.build_kwargs(response.prompt, stream=False)
+        assert kwargs["extra_body"]["reasoning"]["effort"] == "high"
+        assert kwargs["frequency_penalty"] == 0.25
+        assert kwargs["presence_penalty"] == 0.5
+    assert kwargs["extra_body"]["models"] == ["provider/first:free", "openrouter/auto"]
+    assert kwargs["extra_body"]["provider"] == {"order": ["Test"]}
+    assert "models" not in kwargs
+    assert response.prompt.options.models == ["provider/first:free", "openrouter/auto"]
+
+
+@pytest.mark.parametrize(
+    "model_class",
+    (
+        OpenRouterChat,
+        OpenRouterAsyncChat,
+        OpenRouterResponses,
+        OpenRouterAsyncResponses,
+    ),
+)
+@pytest.mark.parametrize("models", (None, [], "[]"))
+def test_no_fallback_models_are_sent(model_class, models):
+    model = model_class("openrouter/test/model", model_name="test/model")
+    response = model.prompt("hello", models=models)
+    if isinstance(model, (OpenRouterResponses, OpenRouterAsyncResponses)):
+        kwargs = model._build_responses_kwargs(response.prompt, stream=False)
+    else:
+        kwargs = model.build_kwargs(response.prompt, stream=False)
+    assert "models" not in kwargs
+    assert "models" not in kwargs.get("extra_body", {})
+
+
+@pytest.mark.parametrize(
+    "models",
+    (
+        "not-json",
+        "{}",
+        '"provider/model"',
+        "true",
+        "null",
+        1,
+        [1],
+        [None],
+        [True],
+        [""],
+        '["   "]',
+    ),
+)
+def test_invalid_fallback_models_fail_before_execution(models):
+    model = OpenRouterResponses("openrouter/test/model", model_name="test/model")
+    with pytest.raises(ValidationError):
+        model.prompt("hello", models=models)
+
+
+@pytest.fixture
+def openrouter_requests(monkeypatch):
+    requests = []
+
+    def handle(request):
+        requests.append((request.url.path, json.loads(request.content)))
+        if request.url.path.endswith("/responses"):
+            data = {
+                "id": "resp_local",
+                "object": "response",
+                "created_at": 1,
+                "status": "completed",
+                "model": "test/fallback",
+                "output": [
+                    {
+                        "id": "msg_local",
+                        "type": "message",
+                        "role": "assistant",
+                        "status": "completed",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "local reply",
+                                "annotations": [],
+                            }
+                        ],
+                    }
+                ],
+                "usage": {"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+            }
+        else:
+            assert request.url.path.endswith("/chat/completions")
+            data = {
+                "id": "chat_local",
+                "object": "chat.completion",
+                "created": 1,
+                "model": "test/fallback",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {"role": "assistant", "content": "local reply"},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 1,
+                    "completion_tokens": 2,
+                    "total_tokens": 3,
+                },
+            }
+        return httpx.Response(200, json=data)
+
+    transport = httpx.MockTransport(handle)
+    sync_client = openai.OpenAI(
+        api_key="sk-local-invalid-oss-test",
+        base_url="https://openrouter.ai/api/v1",
+        http_client=httpx.Client(transport=transport),
+        max_retries=0,
+    )
+    async_client = openai.AsyncOpenAI(
+        api_key="sk-local-invalid-oss-test",
+        base_url="https://openrouter.ai/api/v1",
+        http_client=httpx.AsyncClient(transport=transport),
+        max_retries=0,
+    )
+
+    def get_client(self, key, async_=False):
+        return async_client if async_ else sync_client
+
+    monkeypatch.setattr(_mixin, "get_client", get_client, raising=False)
+    yield requests
+    sync_client.close()
+    asyncio.run(async_client.close())
+
+
+@pytest.mark.parametrize("async_", (False, True))
+@pytest.mark.parametrize("chat_completions", (False, True))
+def test_fallback_models_reach_sdk_request(
+    openrouter_requests, async_, chat_completions
+):
+    model_class = OpenRouterAsyncResponses if async_ else OpenRouterResponses
+    model = model_class("openrouter/test/model", model_name="test/model")
+    response = model.prompt(
+        "hello",
+        stream=False,
+        models=["first/fallback", "second/fallback:free"],
+        provider={"order": ["Test"]},
+        chat_completions=chat_completions,
+    )
+    text = asyncio.run(response.text()) if async_ else response.text()
+    assert text == "local reply"
+    assert len(openrouter_requests) == 1
+    path, body = openrouter_requests[0]
+    assert path.endswith("/chat/completions" if chat_completions else "/responses")
+    assert body["models"] == ["first/fallback", "second/fallback:free"]
+    assert body["model"] == "test/model"
+    assert body["provider"] == {"order": ["Test"]}
+
+
+@pytest.mark.parametrize("chat_completions", (False, True))
+def test_fallback_models_cli(openrouter_requests, monkeypatch, chat_completions):
+    model = OpenRouterResponses("openrouter/test/model", model_name="test/model")
+    monkeypatch.setattr("llm.cli.get_model", lambda *args, **kwargs: model)
+    result = CliRunner().invoke(
+        cli,
+        [
+            "prompt",
+            "hello",
+            "-m",
+            model.model_id,
+            "--no-stream",
+            "--no-log",
+            "-o",
+            "models",
+            '["first/fallback", "second/fallback:free"]',
+            "-o",
+            "chat_completions",
+            str(int(chat_completions)),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert result.output.strip() == "local reply"
+    path, body = openrouter_requests[0]
+    assert path.endswith("/chat/completions" if chat_completions else "/responses")
+    assert body["models"] == ["first/fallback", "second/fallback:free"]
+
+
+@pytest.mark.parametrize("models", ("not-json", "{}", "null", '[" "]'))
+def test_invalid_fallback_models_cli_does_not_send(
+    openrouter_requests, monkeypatch, models
+):
+    model = OpenRouterResponses("openrouter/test/model", model_name="test/model")
+    monkeypatch.setattr("llm.cli.get_model", lambda *args, **kwargs: model)
+    result = CliRunner().invoke(
+        cli,
+        ["prompt", "hello", "-m", model.model_id, "--no-log", "-o", "models", models],
+    )
+    assert result.exit_code != 0
+    assert "models" in result.output
+    assert openrouter_requests == []
 def response_snapshot(response):
     output = deepcopy(response.response_json["output"])
     for item in output:
