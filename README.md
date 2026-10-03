@@ -188,8 +188,8 @@ OpenRouter handles fallback routing on the server.
 
 Python callers can pass the same list using
 `model.prompt("Hello", models=["anthropic/claude-sonnet-4"])`.
-Omitting the option or passing an empty list disables fallbacks for that
-request. Invalid JSON and empty model IDs are rejected before sending it.
+Omitting the option or passing an empty list omits `models` from the request.
+Invalid JSON and empty model IDs are rejected before sending it.
 
 ### Provider routing
 
