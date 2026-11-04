@@ -5,7 +5,7 @@ description = "LLM plugin for models hosted by OpenRouter"
 readme = "README.md"
 authors = [{name = "Simon Willison"}]
 license = "Apache-2.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = []
 dependencies = [
     "llm>=0.34",
