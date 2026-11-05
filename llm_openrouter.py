@@ -851,7 +851,7 @@ def register_commands(cli):
                 f"Removed models: {', '.join('openrouter/' + m for m in removed)}",
                 err=True,
             )
-        else:
+        if not added and not removed:
             click.echo("No changes", err=True)
 
     @openrouter.command()
