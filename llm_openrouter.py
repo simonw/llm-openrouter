@@ -49,6 +49,10 @@ def has_parameter(model_definition, parameter):
 @cache
 def build_openrouter_options(base_options):
     class Options(base_options):
+        models: Optional[list[str]] = Field(
+            description="JSON array of fallback OpenRouter model IDs, tried in order",
+            default=None,
+        )
         provider: Optional[Union[dict, str]] = Field(
             description=("JSON object to control provider routing"),
             default=None,
@@ -72,6 +76,23 @@ def build_openrouter_options(base_options):
             description="Set to true to enable reasoning with default parameters",
             default=None,
         )
+
+        @field_validator("models", mode="before")
+        def parse_models(cls, models):
+            if isinstance(models, str):
+                try:
+                    models = json.loads(models)
+                except json.JSONDecodeError:
+                    raise ValueError("Invalid JSON in models string")
+                if not isinstance(models, list):
+                    raise ValueError("models string must be a JSON array")
+            return models
+
+        @field_validator("models")
+        def validate_models(cls, models):
+            if models is not None and any(not model.strip() for model in models):
+                raise ValueError("models entries must be non-empty model IDs")
+            return models
 
         @field_validator("provider")
         def validate_provider(cls, provider):
@@ -339,11 +360,14 @@ class _mixin:
 
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
+        kwargs.pop("models", None)
         kwargs.pop("provider", None)
         kwargs.pop("reasoning_effort", None)
         kwargs.pop("reasoning_max_tokens", None)
         kwargs.pop("reasoning_enabled", None)
-        extra_body = {}
+        extra_body = dict(kwargs.pop("extra_body", {}) or {})
+        if prompt.options.models:
+            extra_body["models"] = prompt.options.models
         if prompt.options.provider:
             extra_body["provider"] = prompt.options.provider
         reasoning = {}
@@ -368,6 +392,7 @@ class _mixin:
 
         kwargs = super()._build_responses_kwargs(prompt, stream)
         for key in (
+            "models",
             "provider",
             "reasoning_summary",
             "reasoning_max_tokens",
@@ -410,6 +435,8 @@ class _mixin:
                 extra_body[key] = value
         if provider:
             extra_body["provider"] = provider
+        if prompt.options.models:
+            extra_body["models"] = prompt.options.models
         if extra_body:
             kwargs["extra_body"] = extra_body
         return kwargs
