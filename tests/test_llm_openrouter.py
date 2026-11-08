@@ -640,3 +640,75 @@ def test_unsupported_responses_options(option, value):
     response = model.prompt("hello", options={option: value})
     with pytest.raises(ValueError, match=option):
         model._build_responses_kwargs(response.prompt, stream=True)
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_cost_in_token_details(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    response = model.prompt("hello")
+    usage = {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "input_tokens_details": {"cached_tokens": 0},
+        "output_tokens_details": {"reasoning_tokens": 0},
+        "cost": 0.000123,
+        "cost_details": {"input_cost": 0.0001, "output_cost": 0.000023},
+    }
+    model._set_usage_responses(response, usage)
+
+    assert response.input_tokens == 10
+    assert response.output_tokens == 5
+    assert response.token_details["cost"] == 0.000123
+    assert response.token_details["cost_details"] == {
+        "input_cost": 0.0001,
+        "output_cost": 0.000023,
+    }
+    assert response.token_details["input_tokens_details"] == {"cached_tokens": 0}
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_cost_absent_does_not_set_token_details(model_class):
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    response = model.prompt("hello")
+    usage = {
+        "input_tokens": 10,
+        "output_tokens": 5,
+    }
+    model._set_usage_responses(response, usage)
+
+    assert response.input_tokens == 10
+    assert response.output_tokens == 5
+    assert response.token_details is None
+
+
+@pytest.mark.parametrize(
+    "model_class", (OpenRouterResponses, OpenRouterAsyncResponses)
+)
+def test_cost_zero_is_included_in_token_details(model_class):
+    """cost=0 is a valid value (free models) and must be preserved."""
+    model = model_class(
+        model_id="openrouter/test/model",
+        model_name="test/model",
+        api_base="https://openrouter.ai/api/v1",
+    )
+    response = model.prompt("hello")
+    usage = {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "cost": 0,
+    }
+    model._set_usage_responses(response, usage)
+
+    assert response.token_details["cost"] == 0
