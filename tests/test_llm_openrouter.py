@@ -14,6 +14,7 @@ from llm_openrouter import (
     WebFetch,
     WebSearch,
     build_openrouter_options,
+    format_pricing,
 )
 
 TINY_PNG = (
@@ -640,3 +641,12 @@ def test_unsupported_responses_options(option, value):
     response = model.prompt("hello", options={option: value})
     with pytest.raises(ValueError, match=option):
         model._build_responses_kwargs(response.prompt, stream=True)
+
+
+def test_format_pricing_skips_non_numeric_values():
+    # 'overrides' key on some OpenRouter models holds a list, not a numeric string
+    pricing = {"prompt": "0.000001", "completion": "0.000002", "overrides": [{"key": "val"}]}
+    result = format_pricing(pricing)
+    assert "overrides" not in result
+    assert "prompt" in result
+    assert "completion" in result
