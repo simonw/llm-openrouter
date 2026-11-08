@@ -769,13 +769,14 @@ def fetch_cached_json(url, path, cache_timeout):
     try:
         response = httpx.get(url, follow_redirects=True)
         response.raise_for_status()  # This will raise an HTTPError if the request fails
+        data = response.json()
 
         # If successful, write to the file
         with open(path, "w") as file:
-            json.dump(response.json(), file)
+            json.dump(data, file)
 
-        return response.json()
-    except httpx.HTTPError:
+        return data
+    except (httpx.HTTPError, json.JSONDecodeError):
         # If there's an existing file, load it
         if path.is_file():
             with open(path, "r") as file:
