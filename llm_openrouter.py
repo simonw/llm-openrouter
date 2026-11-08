@@ -635,6 +635,20 @@ class _mixin:
             ),
         ]
 
+    def _set_usage_responses(self, response, usage):
+        super()._set_usage_responses(response, usage)
+        if not usage:
+            return
+        extra = {}
+        cost = usage.get("cost")
+        if cost is not None:
+            extra["cost"] = cost
+        cost_details = usage.get("cost_details")
+        if cost_details:
+            extra["cost_details"] = cost_details
+        if extra:
+            response.token_details = {**(response.token_details or {}), **extra}
+
     def _refresh_server_tool_events(self, output, done_events):
         super()._refresh_server_tool_events(output, done_events)
         for item in output or []:
