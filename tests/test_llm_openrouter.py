@@ -7,6 +7,7 @@ from click.testing import CliRunner
 from inline_snapshot import snapshot
 from llm.cli import cli
 from llm.parts import Message, TextPart, ToolCallPart, ToolResultPart
+import llm_openrouter
 from llm_openrouter import (
     OpenRouterAsyncResponses,
     OpenRouterResponses,
@@ -98,6 +99,17 @@ def test_llm_models():
     )
     for fragment in fragments:
         assert fragment in result.output
+
+
+def test_refresh_added_models_does_not_report_no_changes(monkeypatch):
+    model_ids = iter(({"existing-model"}, {"existing-model", "new-model"}))
+    monkeypatch.setattr(llm_openrouter, "get_model_ids", lambda **kwargs: next(model_ids))
+
+    result = CliRunner().invoke(cli, ["openrouter", "refresh"])
+
+    assert result.exit_code == 0
+    assert "Added models: openrouter/new-model" in result.stderr
+    assert "No changes" not in result.stderr
 
 
 @pytest.mark.vcr
