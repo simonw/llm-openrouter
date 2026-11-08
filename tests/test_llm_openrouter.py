@@ -1,5 +1,7 @@
+import json
 from copy import deepcopy
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import llm
 import pytest
@@ -640,3 +642,25 @@ def test_unsupported_responses_options(option, value):
     response = model.prompt("hello", options={option: value})
     with pytest.raises(ValueError, match=option):
         model._build_responses_kwargs(response.prompt, stream=True)
+
+
+def test_fetch_cached_json_keeps_cache_on_invalid_response(tmp_path):
+    from llm_openrouter import fetch_cached_json
+
+    cache_file = tmp_path / "models.json"
+    good_data = {"data": [{"id": "model-1"}]}
+    cache_file.write_text(json.dumps(good_data))
+
+    # backdate so the cache appears expired
+    import os, time
+    os.utime(cache_file, (time.time() - 9999, time.time() - 9999))
+
+    mock_response = MagicMock()
+    mock_response.raise_for_status.return_value = None
+    mock_response.json.side_effect = json.JSONDecodeError("bad", "<html>", 0)
+
+    with patch("llm_openrouter.httpx.get", return_value=mock_response):
+        result = fetch_cached_json("https://example.com/models", cache_file, 60)
+
+    assert result == good_data
+    assert json.loads(cache_file.read_text()) == good_data
