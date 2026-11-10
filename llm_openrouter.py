@@ -80,9 +80,11 @@ def build_openrouter_options(base_options):
 
             if isinstance(provider, str):
                 try:
-                    return json.loads(provider)
+                    provider = json.loads(provider)
                 except json.JSONDecodeError:
                     raise ValueError("Invalid JSON in provider string")
+                if not isinstance(provider, dict):
+                    raise ValueError("provider must be a JSON object")
             return provider
 
     return Options
